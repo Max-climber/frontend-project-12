@@ -1,19 +1,36 @@
 // для пути /login
 import { Formik, Form, Field } from 'formik';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 export const LoginPage = () => {
+    const navigate = useNavigate();
+
     return (
         <Formik
-            initialValues={{ email: "", password: "" }}
-            onSubmit={( values, { setSubmitting }) => {
-                console.log("Form is validated! Submitting the form...");
-                setSubmitting(false);
+            initialValues={{ 
+                username: '', 
+                password: '',
+             }}
+            onSubmit={ async ( values, { setSubmitting, setStatus}) => {
+                try {
+                    const response = await axios.post('api/v1/login', values); //отправка данных формы на сервер
+                    localStorage.setItem('token', response.data.token);
+                    navigate('/') //если получили токен, значит, пользователь авторзован и можно перенаправлять на главную страницу
+                } catch (e) {
+                    setStatus('Неверные имя пользователя или пароль')
+                } finally {
+                    setSubmitting(false); 
+                }
+                
             }}
         >
-            {() => (
-                <Form>
+            {(formik) => {
+                const { status} = formik;
+                return (<Form>
+                    <h1>Войти</h1>
                 <div className="form-group">
-                    <label htmlFor="email">Email</label>
+                    <label htmlFor="email">Ваш ник</label>
                     <Field
                     type="email"
                     name="email"
@@ -21,16 +38,18 @@ export const LoginPage = () => {
                     />
                 </div>
                 <div className="form-group">
-                    <label htmlFor="password">Password</label>
+                    <label htmlFor="password">пароль</label>
                     <Field
                     type="password"
                     name="password"
                     className="form-control"
                     />
                 </div>
+                { status && <div className='text-danger'>{status}</div> }
                 <button type="submit">Войти</button>
-                </Form>
-            )}
+                </Form> 
+                )
+            }}
         </Formik>
     )
 }
