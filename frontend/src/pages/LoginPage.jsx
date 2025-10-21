@@ -30,10 +30,10 @@ export const LoginPage = () => {
                 return (<Form>
                     <h1>Войти</h1>
                 <div className="form-group">
-                    <label htmlFor="email">Ваш ник</label>
+                    <label htmlFor="username">Ваш ник</label>
                     <Field
-                    type="email"
-                    name="email"
+                    type="text"
+                    name="username"
                     className="form-control"
                     />
                 </div>

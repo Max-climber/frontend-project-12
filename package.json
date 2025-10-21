@@ -18,7 +18,6 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@hexlet/chat-server": "^2.0.4",
-    "formik": "^2.4.6"
+    "@hexlet/chat-server": "^2.0.4"
   }
 }
