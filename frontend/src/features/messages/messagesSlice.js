@@ -15,5 +15,5 @@ const messagesSlice = createSlice({
   },
 })
 
-export const { setMessages } = channelsSlice.actions
+export const { setMessages } = messagesSlice.actions
 export default messagesSlice.reducer

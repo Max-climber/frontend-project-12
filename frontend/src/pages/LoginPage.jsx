@@ -14,7 +14,7 @@ export const LoginPage = () => {
              }}
             onSubmit={ async ( values, { setSubmitting, setStatus}) => {
                 try {
-                    const response = await axios.post('api/v1/login', values); //отправка данных формы на сервер
+                    const response = await axios.post('/api/v1/login', values); //отправка данных формы на сервер
                     localStorage.setItem('token', response.data.token);
                     navigate('/') //если получили токен, значит, пользователь авторзован и можно перенаправлять на главную страницу
                 } catch (e) {

@@ -5,10 +5,10 @@ import { useNavigate } from 'react-router-dom';
 import { setChannels } from '../features/channels/channelsSlice';
 import { setMessages } from '../features/messages/messagesSlice';
 
-import { useSelector, useDispatch } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 
-export const HomePage = () => {
+const HomePage = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     useEffect(() => {
@@ -24,8 +24,8 @@ export const HomePage = () => {
                         Authorization: `Bearer ${token}`
                     }
                 })
-                dispatch(setChannels(response)) //какой ожидать ответ от сервера???
-                dispatch(setMessages(response))
+                dispatch(setChannels(response.data.channels)) 
+                dispatch(setMessages(response.data.messages))
             } catch(e) {
                 console.error('Ошибка при получении данных:', e)
             }
@@ -42,3 +42,4 @@ export const HomePage = () => {
         </div>
     );
 }
+export default HomePage
