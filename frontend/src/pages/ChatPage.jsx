@@ -6,6 +6,7 @@ import { setChannels } from '../features/channels/channelsSlice';
 import { setMessages } from '../features/messages/messagesSlice';
 
 import { useDispatch } from 'react-redux'
+import socket from '../socket';
 
 
 const HomePage = () => {
@@ -16,8 +17,8 @@ const HomePage = () => {
         if(!token) {
             navigate('/login');
         }
-
-        const fenchData = async () => {
+        // Загружаем данные с сервера
+        const fetchData = async () => {
             try {
                 const response = await axios.get('api/v1/data', {
                     headers: {
@@ -29,10 +30,17 @@ const HomePage = () => {
             } catch(e) {
                 console.error('Ошибка при получении данных:', e)
             }
-
         }
 
-        fenchData();
+        fetchData();
+
+        // Подписываемся на новые сообщения по сокету
+        socket.on('newMessage', (messages) => {
+            dispatch(addMessage(messages)) // говорим Redux добавить сообщение в список
+        })
+        return () => {
+            socket.off('newMessage') // чтобы каждый раз при открытии страницы не добавлялся новый сокет и сообщения не дублировались
+        }
     }, [navigate, dispatch]);
     
     return (

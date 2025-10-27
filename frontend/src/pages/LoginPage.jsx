@@ -2,9 +2,12 @@
 import { Formik, Form, Field } from 'formik';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { setUser } from '../features/users/userSlice';
 
 export const LoginPage = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     return (
         <Formik
@@ -16,8 +19,12 @@ export const LoginPage = () => {
                 try {
                     const response = await axios.post('/api/v1/login', values); //отправка данных формы на сервер
                     localStorage.setItem('token', response.data.token);
+
+                    dispatch(setUser(values.username)) // сохраняем имя пользователя в store
+                    
                     navigate('/') //если получили токен, значит, пользователь авторзован и можно перенаправлять на главную страницу
                 } catch (e) {
+                    console.error(e);
                     setStatus('Неверные имя пользователя или пароль')
                 } finally {
                     setSubmitting(false); 
