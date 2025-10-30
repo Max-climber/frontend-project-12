@@ -2,14 +2,16 @@
 import axios from 'axios';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { setChannels } from '../features/channels/channelsSlice';
+import { setChannels, setCurrentChannelId, addChannel } from '../features/channels/channelsSlice';
 import { setMessages } from '../features/messages/messagesSlice';
 
 import { useDispatch } from 'react-redux'
 import socket from '../socket';
 
+import { Formik, Form, Field } from 'formik';
 
-const HomePage = () => {
+
+const ChatPage = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     useEffect(() => {
@@ -27,6 +29,7 @@ const HomePage = () => {
                 })
                 dispatch(setChannels(response.data.channels)) 
                 dispatch(setMessages(response.data.messages))
+
             } catch(e) {
                 console.error('Ошибка при получении данных:', e)
             }
@@ -38,16 +41,23 @@ const HomePage = () => {
         socket.on('newMessage', (messages) => {
             dispatch(addMessage(messages)) // говорим Redux добавить сообщение в список
         })
+
+        socket.on('newChannel', (channel) => {
+            dispatch(addChannel(channel));
+        });
+
         return () => {
             socket.off('newMessage') // чтобы каждый раз при открытии страницы не добавлялся новый сокет и сообщения не дублировались
         }
     }, [navigate, dispatch]);
-    
+
+    dispatch(setCurrentChannelId(channel.id));
+
     return (
         <div>
-            <h1>HomePage</h1>
+            <h1>ChatPage</h1>
             <p>Заглушка для главной страницы</p>
         </div>
     );
 }
-export default HomePage
+export default ChatPage
