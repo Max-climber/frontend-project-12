@@ -2,6 +2,8 @@
 import * as yup from 'yup';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import { addChannel, setCurrentChannelId } from '../features/channels/channelsSlice';
+import { channelsSelectors } from '../features/channels/channelsSlice';
+
 import { useDispatch, useSelector } from 'react-redux';
 import socket from '../socket';
 
@@ -11,22 +13,34 @@ const schema = yup.object().shape({
 
 export default function AddChannelModal({ onClose }) {
     const dispatch = useDispatch();
-    const channels = useSelector((state) => state.channels.list)
+    const channels = useSelector(channelsSelectors.selectAll) || [];
     return (
         <div className="modal">
             <Formik
                 initialValues={{ name: '' }}
                 validationSchema={schema}
                 onSubmit={(values, { setSubmitting, setFieldError }) => {
-                const name = values.name.trim();
-                // проверка на дубликат
-                if (channels.some((channel) => channel.name === name)) {
-                    setFieldError('name', 'Канал с таким именем уже существует');
-                    setSubmitting(false);
-                    return;
-                }
+                    const name = values.name.trim();
 
-                socket.emit('newChannel', { name }, (res) => { console.log('ack:', res); }); // временно чтобы узнать ответ от сервера
+                    // Проверка на дубликат
+                    if (channels.some((channel) => channel.name === name)) {
+                        setFieldError('name', 'Канал с таким именем уже существует');
+                        setSubmitting(false);
+                        return;
+                    }
+                
+                    // Отправляем событие на сервер
+                    socket.emit('newChannel', { name }, (response) => {
+                        if (response && response.id) {
+                        const channel = response;
+                        dispatch(addChannel(channel));
+                        dispatch(setCurrentChannelId(channel.id));
+                        onClose();
+                        } else {
+                        setFieldError('name', response.error || 'Ошибка создания канала');
+                        }
+                        setSubmitting(false);
+                    });
                 }}
             >
                 {({ isSubmitting }) => (

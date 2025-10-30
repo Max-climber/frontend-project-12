@@ -1,26 +1,22 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createSlice, createEntityAdapter  } from '@reduxjs/toolkit'
 
-// Начальное значение
-const initialState = {
-  list: [],
-  currentChannelId: 1,
-}
+const channelsAdapter = createEntityAdapter()
+const initialState = channelsAdapter.getInitialState({ currentChannelId: 1 })
 
 const channelsSlice = createSlice({
   name: 'channels',
   initialState,
   reducers: {
-    setChannels: (state, action) => {
-      state.list = action.payload
-    },
+    setChannels: channelsAdapter.setAll, //обновляем таким образом все данные
+    addChannel: channelsAdapter.addOne,
+    removeChannel: channelsAdapter.removeOne,
     setCurrentChannelId: (state, action) => {
       state.currentChannelId = action.payload
     },
-    addChannel: (state, action) => {
-        state.list.push(action.payload)
-    }
   },
 })
 
-export const { setChannels, setCurrentChannelId, addChannel } = channelsSlice.actions
+export const channelsSelectors = channelsAdapter.getSelectors(state => state.channels)
+export const { setChannels, addChannel, removeChannel, setCurrentChannelId } = channelsSlice.actions
+
 export default channelsSlice.reducer

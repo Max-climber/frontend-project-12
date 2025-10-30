@@ -1,4 +1,3 @@
 import { io } from 'socket.io-client';
-
-const socket = io('http://localhost:5001'); //Это сервер бэка
+const socket = io(window.location.origin); 
 export default socket;
