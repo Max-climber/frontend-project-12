@@ -1,11 +1,11 @@
 
 import * as yup from 'yup';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
-import { addChannel, setCurrentChannelId } from '../features/channels/channelsSlice';
-import { channelsSelectors } from '../features/channels/channelsSlice';
+import { addChannel, setCurrentChannelId } from '../../features/channels/channelsSlice';
+import { channelsSelectors } from '../../features/channels/channelsSlice';
 
 import { useDispatch, useSelector } from 'react-redux';
-import socket from '../socket';
+import socket from '../../socket';
 
 const schema = yup.object().shape({
   name: yup.string().trim().min(3, 'Минимум 3 символа').max(20, 'Максимум 20 символов').required('Обязательное поле'),

@@ -1,5 +1,9 @@
 import socket from "../socket";
 import { useSelector } from "react-redux";
+import * as yup from 'yup';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import { setMessages, addMessage, removeMessagesByChannelsId } from '../features/messages/messagesSlice';
+import { messagesSelectors } from '../../features/messages/messagesSlice';
 
 //компонент формы, чтобы пользователь отправлял сообщение в чат.
 const MessageForm = () => {
@@ -20,7 +24,6 @@ const MessageForm = () => {
         )
         
         e.target.reset(); //очищаем поле ввода после отправки сообщения
-
     }
 
     return (

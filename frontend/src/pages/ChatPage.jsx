@@ -3,13 +3,13 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { setChannels, setCurrentChannelId, addChannel } from '../features/channels/channelsSlice';
-import { setMessages } from '../features/messages/messagesSlice';
+import { setMessages, addMessage, removeMessagesByChannelsId } from '../features/messages/messagesSlice';
 
 import { useDispatch } from 'react-redux'
 import socket from '../socket.js';
 
 import { Formik, Form, Field } from 'formik';
-import AddChannelModal from '../components/AddChannelModal';
+import AddChannelModal from '../components/modals/AddChannelModal.jsx';
 
 const ChatPage = () => {
     const [showModal, setShowModal] = useState(true); // пока true для теста
