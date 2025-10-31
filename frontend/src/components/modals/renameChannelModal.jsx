@@ -1,6 +1,6 @@
 import { useDispatch } from 'react-redux';
-import { renameChannel } from '../features/channels/channelsSlice';
-import socket from '../socket';
+import { renameChannel } from '../../features/channels/channelsSlice';
+import socket from '../../socket';
 import { Formik, Form, Field } from 'formik';
 import * as yup from 'yup';
 

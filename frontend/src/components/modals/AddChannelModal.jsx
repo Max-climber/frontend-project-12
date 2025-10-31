@@ -31,13 +31,13 @@ export default function AddChannelModal({ onClose }) {
                 
                     // Отправляем событие на сервер
                     socket.emit('newChannel', { name }, (response) => {
-                        if (response && response.id) {
-                        const channel = response;
-                        dispatch(addChannel(channel));
-                        dispatch(setCurrentChannelId(channel.id));
-                        onClose();
+                        const channel = response.data
+                        if (channel) {
+                            dispatch(addChannel(channel));
+                            dispatch(setCurrentChannelId(channel.id));
+                            onClose();
                         } else {
-                        setFieldError('name', response.error || 'Ошибка создания канала');
+                        setFieldError('name',   'Ошибка создания канала');
                         }
                         setSubmitting(false);
                     });

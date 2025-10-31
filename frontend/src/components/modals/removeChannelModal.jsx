@@ -1,7 +1,7 @@
 import { useDispatch } from 'react-redux';
-import { removeChannel, setCurrentChannelId } from '../features/channels/channelsSlice';
-import { removeMessagesByChannelId } from '../features/messages/messagesSlice';
-import socket from '../socket';
+import {  setChannels, addChannel, removeChannel, renameChannel, setCurrentChannelId } from '../../features/channels/channelsSlice';
+import { removeMessagesByChannelsId } from '../../features/messages/messagesSlice';
+import socket from '../../socket';
 
 export default function RemoveChannelModal({ onClose, channel }) {
   const dispatch = useDispatch();
@@ -9,7 +9,7 @@ export default function RemoveChannelModal({ onClose, channel }) {
   const handleRemove = () => {
     socket.emit('removeChannel', { id: channel.id }, () => {
       dispatch(removeChannel(channel.id));
-      dispatch(removeMessagesByChannelId(channel.id));
+      dispatch(removeMessagesByChannelsId(channel.id));
       dispatch(setCurrentChannelId(1)); // дефолтный канал
       onClose();
     });

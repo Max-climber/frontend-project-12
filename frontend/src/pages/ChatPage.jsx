@@ -10,9 +10,24 @@ import socket from '../socket.js';
 
 import { Formik, Form, Field } from 'formik';
 import AddChannelModal from '../components/modals/AddChannelModal.jsx';
+import RemoveChannelModal from '../components/modals/removeChannelModal.jsx';
+import RenameChannelModal from '../components/modals/renameChannelModal.jsx';
+import ChannelsList from '../components/ChannelsList.jsx';
 
 const ChatPage = () => {
     const [showModal, setShowModal] = useState(true); // пока true для теста
+    const [modalType, setModalType] = useState(null);
+    const [modalChannel, setModalChannel] = useState(null);
+
+    const openModal = (type, channel = null) => {
+        setModalType(type);
+        setModalChannel(channel);
+    };
+
+    const closeModal = () => {
+        setModalType(null);
+        setModalChannel(null);
+    };
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -55,15 +70,17 @@ const ChatPage = () => {
     }, [navigate, dispatch]);
 
     return (
-        
-        <div>
-            <h1>ChatPage</h1>
-            {showModal && (
-                <AddChannelModal onClose={() => {
-                    console.log('Модалка закрыта');
-                    setShowModal(false);
-                }}/>
-            )}
+        <div className="container h-100 my-4 overflow-hidden rounded shadow">
+            <div className="row h-100 bg-white flex-md-row">
+                <ChannelsList openModal={openModal} />
+                <div className="col p-0 h-100">
+                <h2 className="p-3">Чат</h2>
+                </div>
+            </div>
+
+            {modalType === 'add' && <AddChannelModal onClose={closeModal} />}
+            {modalType === 'rename' && <RenameChannelModal onClose={closeModal} channel={modalChannel} />}
+            {modalType === 'remove' && <RemoveChannelModal onClose={closeModal} channel={modalChannel} />}
         </div>
     );
 }
