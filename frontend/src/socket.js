@@ -1,3 +1,3 @@
 import { io } from 'socket.io-client';
-const socket = io(window.location.origin); 
+const socket = io();
 export default socket;

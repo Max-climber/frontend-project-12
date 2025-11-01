@@ -39,12 +39,13 @@ const ChatPage = () => {
         // Загружаем данные с сервера
         const fetchData = async () => {
             try {
-                const response = await axios.get('/api/v1/data', {
+                const response = await axios.get('http://localhost:5001/api/v1/data', {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
                 })
-                dispatch(setChannels(response.data?.channels || [])) 
+                console.log('Ответ с сервера:', response.data); //проверяем что сервер  возвращает массив каналов
+                dispatch(setChannels(response.data?.channels ?? [])) 
                 dispatch(setMessages(response.data?.messages || []))
 
             } catch(e) {
@@ -68,7 +69,7 @@ const ChatPage = () => {
             socket.off('newChannel')
         }
     }, [navigate, dispatch]);
-
+    console.log(modalType);// для проверки, работает ли кнопки “+” 
     return (
         <div className="container h-100 my-4 overflow-hidden rounded shadow">
             <div className="row h-100 bg-white flex-md-row">

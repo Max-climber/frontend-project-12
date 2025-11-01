@@ -7,6 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
         // string shorthand
+        
         '/api/v1': 'http://localhost:5001',
     }
   }
