@@ -1,41 +1,32 @@
-import socket from "../socket";
-import { useSelector } from "react-redux";
-import * as yup from 'yup';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
-import { setMessages, addMessage, removeMessagesByChannelsId } from '../features/messages/messagesSlice';
-import { messagesSelectors } from '../../features/messages/messagesSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { addMessage } from '../features/messages/messagesSlice';
 
-//компонент формы, чтобы пользователь отправлял сообщение в чат.
-const MessageForm = () => {
-    const currentChannelId = useSelector((state) => state.channels.currentChannelId); // id канала, в который сейчас пишет юзер
-    const username = useSelector((state) => state.user.username);
+export default function MessageForm() {
+  const dispatch = useDispatch();
+  const currentChannelId = useSelector((state) => state.channels.currentChannelId);
+  const username = useSelector((state) => state.user.username);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const text = e.target.elements.message.value.trim();
+    if (!text) return;
 
-        const text = e.target.elements.message.value.trim()
-        if(!text) return;
+    dispatch(addMessage({
+      id: Date.now(),
+      body: text,
+      channelId: currentChannelId,
+      username,
+    }));
 
-        socket.emit('newMessage', {
-            body: text, 
-            channelId: currentChannelId || 1, 
-            username, 
-            }   
-        )
-        
-        e.target.reset(); //очищаем поле ввода после отправки сообщения
-    }
+    e.target.reset();
+  };
 
-    return (
-        <form onSubmit={handleSubmit}>
-            <input 
-            name="message"
-            placeholder="Введите сообщение"
-            className="form-control"
-            />
-            <button type="submit">Отправить</button>
-        </form>
-    )
+  return (
+    <form onSubmit={handleSubmit} className="mt-auto px-5 py-3">
+      <div className="input-group">
+        <input name="message" placeholder="Введите сообщение..." className="form-control" />
+        <button type="submit" className="btn btn-primary">Отправить</button>
+      </div>
+    </form>
+  );
 }
-
-export default MessageForm;

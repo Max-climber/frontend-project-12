@@ -1,39 +1,41 @@
 import { useDispatch } from 'react-redux';
 import { renameChannel } from '../../features/channels/channelsSlice';
-import socket from '../../socket';
-import { Formik, Form, Field } from 'formik';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as yup from 'yup';
 
 const schema = yup.object().shape({
-  name: yup.string().trim().min(3).max(20).required(),
+  name: yup.string().trim().min(3).max(20).required('Обязательное поле'),
 });
 
 export default function RenameChannelModal({ onClose, channel }) {
   const dispatch = useDispatch();
 
   return (
-    <Formik
-      initialValues={{ name: channel.name }}
-      validationSchema={schema}
-      onSubmit={(values, { setSubmitting, setFieldError }) => {
-        socket.emit('renameChannel', { id: channel.id, name: values.name.trim() }, (response) => {
-          if (response && response.name) {
-            dispatch(renameChannel({ id: channel.id, changes: { name: response.name } }));
-            onClose();
-          } else {
-            setFieldError('name', 'Ошибка при переименовании');
-          }
+    <div className="modal">
+      <Formik
+        initialValues={{ name: channel.name }}
+        validationSchema={schema}
+        onSubmit={(values, { setSubmitting }) => {
+          dispatch(renameChannel({ id: channel.id, changes: { name: values.name.trim() } }));
           setSubmitting(false);
-        });
-      }}
-    >
-      {({ isSubmitting }) => (
-        <Form>
-          <Field name="name" className="form-control" />
-          <button type="submit" className="btn btn-primary" disabled={isSubmitting}>Сохранить</button>
-          <button type="button" className="btn btn-secondary" onClick={onClose}>Отменить</button>
-        </Form>
-      )}
-    </Formik>
+          onClose();
+        }}
+      >
+        {({ isSubmitting }) => (
+          <Form>
+            <Field name="name" className="form-control" />
+            <ErrorMessage name="name" component="div" className="text-danger" />
+            <div className="d-flex justify-content-end mt-3">
+              <button type="button" className="btn btn-secondary me-2" onClick={onClose}>
+                Отмена
+              </button>
+              <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+                Сохранить
+              </button>
+            </div>
+          </Form>
+        )}
+      </Formik>
+    </div>
   );
 }

@@ -1,0 +1,17 @@
+import { useSelector } from 'react-redux';
+import { messagesSelectors } from '../features/messages/messagesSlice';
+
+export default function MessagesBox({ currentChannelId }) {
+  const messages = useSelector(messagesSelectors.selectAll)
+    .filter((m) => m.channelId === currentChannelId);
+
+  return (
+    <div className="chat-messages overflow-auto px-5">
+      {messages.map((msg) => (
+        <div key={msg.id} className="text-break mb-2">
+          <b>{msg.username}</b>: {msg.body}
+        </div>
+      ))}
+    </div>
+  );
+}
