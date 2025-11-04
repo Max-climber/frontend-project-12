@@ -1,59 +1,74 @@
-import * as yup from 'yup';
+import { Modal, Button } from 'react-bootstrap';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
-import { addChannel, setCurrentChannelId } from '../../features/channels/channelsSlice';
+import * as yup from 'yup';
+import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
+import { addChannel, setCurrentChannelId } from '../../features/channels/channelsSlice';
 
 const schema = yup.object().shape({
-  name: yup.string().trim().min(3, 'Минимум 3 символа').max(20, 'Максимум 20 символов').required('Обязательное поле'),
+  name: yup.string().trim().min(3).max(20).required('Обязательное поле'),
 });
 
-export default function AddChannelModal({ onClose }) {
+export default function AddChannelModal({ show, handleClose }) {
   const dispatch = useDispatch();
-  const channels = useSelector((state) => Object.values(state.channels.entities));
+  const channels = useSelector((state) =>
+    state.channels.entities ? Object.values(state.channels.entities) : []
+  );
+  const token = localStorage.getItem('token');
+
+  const handleSubmit = async (values, { setSubmitting, setFieldError }) => {
+    const name = values.name.trim();
+
+    if (channels.some((ch) => ch.name === name)) {
+      setFieldError('name', 'Канал с таким именем уже существует');
+      setSubmitting(false);
+      return;
+    }
+
+    try {
+      const { data } = await axios.post(
+        '/api/channels',
+        { name },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      dispatch(addChannel(data));
+      dispatch(setCurrentChannelId(data.id));
+      handleClose();
+    } catch (err) {
+      console.error('Ошибка создания канала', err);
+      setFieldError('name', 'Ошибка при создании канала');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
-    <div className="modal">
-      <Formik
-        initialValues={{ name: '' }}
-        validationSchema={schema}
-        onSubmit={(values, { setSubmitting, setFieldError }) => {
-          const name = values.name.trim();
-
-          if (channels.some((ch) => ch.name === name)) {
-            setFieldError('name', 'Канал с таким именем уже существует');
-            setSubmitting(false);
-            return;
-          }
-
-          const newChannel = {
-            id: Date.now(),
-            name,
-            removable: true,
-          };
-
-          dispatch(addChannel(newChannel));
-          dispatch(setCurrentChannelId(newChannel.id));
-          setSubmitting(false);
-          onClose();
-        }}
-      >
+    <Modal show={show} onHide={handleClose} centered>
+      <Modal.Header closeButton>
+        <Modal.Title>Добавить канал</Modal.Title>
+      </Modal.Header>
+      <Formik initialValues={{ name: '' }} validationSchema={schema} onSubmit={handleSubmit}>
         {({ isSubmitting }) => (
           <Form>
-            <label htmlFor="name" className="form-label">Имя канала</label>
-            <Field id="name" name="name" className="form-control" />
-            <ErrorMessage name="name" component="div" className="text-danger" />
-
-            <div className="d-flex justify-content-end mt-3">
-              <button type="button" className="btn btn-secondary me-2" onClick={onClose}>
-                Отмена
-              </button>
-              <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
-                Создать
-              </button>
-            </div>
+            <Modal.Body>
+              <Field
+                name="name"
+                placeholder="Имя канала"
+                className="form-control mb-2"
+              />
+              <ErrorMessage name="name" component="div" className="text-danger" />
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="secondary" onClick={handleClose}>
+                Отменить
+              </Button>
+              <Button variant="primary" type="submit" disabled={isSubmitting}>
+                Отправить
+              </Button>
+            </Modal.Footer>
           </Form>
         )}
       </Formik>
-    </div>
+    </Modal>
   );
 }

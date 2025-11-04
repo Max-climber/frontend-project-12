@@ -14,9 +14,9 @@ import RenameChannelModal from '../components/modals/renameChannelModal';
 const ChatPage = () => {
   const [modalType, setModalType] = useState(null);
   const [modalChannel, setModalChannel] = useState(null);
-  const currentChannelId = useSelector((state) => state.channels.currentChannelId);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const currentChannelId = useSelector((state) => state.channels.currentChannelId);
 
   const openModal = (type, channel = null) => {
     setModalType(type);
@@ -37,12 +37,27 @@ const ChatPage = () => {
 
     const fetchData = async () => {
       try {
-        const { data } = await axios.get('http://localhost:5001/api/v1/data', {
+        const { data } = await axios.get('/api/data', {
           headers: { Authorization: `Bearer ${token}` },
         });
+
+        // Проверка структуры ответа
+        if (!data || !Array.isArray(data.channels) || !Array.isArray(data.messages)) {
+          console.error('Неверный формат данных от сервера:', data);
+          return;
+        }
+
         dispatch(setChannels(data.channels));
         dispatch(setMessages(data.messages));
-        dispatch(setCurrentChannelId(data.currentChannelId));
+
+        // Устанавливаем currentChannelId безопасно
+        const defaultChannelId = data.currentChannelId
+          || data.channels[0]?.id
+          || null;
+
+        if (defaultChannelId) {
+          dispatch(setCurrentChannelId(defaultChannelId));
+        }
       } catch (e) {
         console.error('Ошибка при получении данных:', e);
       }

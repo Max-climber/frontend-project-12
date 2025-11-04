@@ -11,7 +11,7 @@ const messagesSlice = createSlice({
     addMessage: messagesAdapter.addOne,
     removeMessagesByChannelsId: (state, action) => {
         const channelId = action.payload;
-        const messages = Object.values(state.entities)
+        const messages = Object.values(state.entities || {});
         const idsToRemove = messages
             .filter((m)=> m.channelId === channelId)
             .map((m) => m.id) // тут массив ID-шников на выходе
