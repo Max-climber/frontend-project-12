@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -10,6 +9,7 @@ import MessageForm from '../components/messageForm';
 import AddChannelModal from '../components/modals/AddChannelModal';
 import RemoveChannelModal from '../components/modals/removeChannelModal';
 import RenameChannelModal from '../components/modals/renameChannelModal';
+import api from '../api/axios';
 
 const ChatPage = () => {
   const [modalType, setModalType] = useState(null);
@@ -37,11 +37,8 @@ const ChatPage = () => {
 
     const fetchData = async () => {
       try {
-        const { data } = await axios.get('/api/data', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const { data } = await api.get('/api/data'); // api подставит baseURL и токен
 
-        // Проверка структуры ответа
         if (!data || !Array.isArray(data.channels) || !Array.isArray(data.messages)) {
           console.error('Неверный формат данных от сервера:', data);
           return;
@@ -50,10 +47,7 @@ const ChatPage = () => {
         dispatch(setChannels(data.channels));
         dispatch(setMessages(data.messages));
 
-        // Устанавливаем currentChannelId безопасно
-        const defaultChannelId = data.currentChannelId
-          || data.channels[0]?.id
-          || null;
+        const defaultChannelId = data.currentChannelId  || data.channels[0]?.id   || null;
 
         if (defaultChannelId) {
           dispatch(setCurrentChannelId(defaultChannelId));
@@ -68,17 +62,16 @@ const ChatPage = () => {
 
   return (
     <div className="container h-100 my-4 overflow-hidden rounded shadow">
-      <div className="row h-100 bg-white flex-md-row">
-        <ChannelsList openModal={openModal} />
-        <div className="col p-0 h-100 d-flex flex-column">
-          <MessagesBox currentChannelId={currentChannelId} />
-          <MessageForm />
+        <div className="row h-100 bg-white flex-md-row">
+            <ChannelsList openModal={openModal} />
+            <div className="col p-0 h-100 d-flex flex-column">
+                <MessagesBox currentChannelId={currentChannelId} />
+                <MessageForm />
+            </div>
         </div>
-      </div>
-
-      {modalType === 'add' && <AddChannelModal onClose={closeModal} />}
-      {modalType === 'rename' && <RenameChannelModal onClose={closeModal} channel={modalChannel} />}
-      {modalType === 'remove' && <RemoveChannelModal onClose={closeModal} channel={modalChannel} />}
+        {modalType === 'add' && <AddChannelModal show={true} handleClose={closeModal} />}
+        {modalType === 'rename' && <RenameChannelModal show={true} handleClose={closeModal} channel={modalChannel} />}
+        {modalType === 'remove' && <RemoveChannelModal show={true} handleClose={closeModal} channel={modalChannel} />}
     </div>
   );
 };

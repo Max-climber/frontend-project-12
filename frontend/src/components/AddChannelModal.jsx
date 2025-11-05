@@ -1,9 +1,9 @@
-import { Modal, Button } from 'react-bootstrap';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
+
+import { Modal, Button, Formik, Form, Field, ErrorMessage } from 'formik';
 import * as yup from 'yup';
-import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { addChannel, setCurrentChannelId } from '../../features/channels/channelsSlice';
+import api from '../../api/axios'; 
 
 const schema = yup.object().shape({
   name: yup.string().trim().min(3).max(20).required('Обязательное поле'),
@@ -14,7 +14,6 @@ export default function AddChannelModal({ show, handleClose }) {
   const channels = useSelector((state) =>
     state.channels.entities ? Object.values(state.channels.entities) : []
   );
-  const token = localStorage.getItem('token');
 
   const handleSubmit = async (values, { setSubmitting, setFieldError }) => {
     const name = values.name.trim();
@@ -26,11 +25,7 @@ export default function AddChannelModal({ show, handleClose }) {
     }
 
     try {
-      const { data } = await axios.post(
-        '/api/channels',
-        { name },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const { data } = await api.post('/api/channels', { name }); // тут токен подставляется автоматически
       dispatch(addChannel(data));
       dispatch(setCurrentChannelId(data.id));
       handleClose();
@@ -51,11 +46,7 @@ export default function AddChannelModal({ show, handleClose }) {
         {({ isSubmitting }) => (
           <Form>
             <Modal.Body>
-              <Field
-                name="name"
-                placeholder="Имя канала"
-                className="form-control mb-2"
-              />
+              <Field name="name" placeholder="Имя канала" className="form-control mb-2" />
               <ErrorMessage name="name" component="div" className="text-danger" />
             </Modal.Body>
             <Modal.Footer>
