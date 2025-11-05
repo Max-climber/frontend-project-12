@@ -17,7 +17,16 @@ const channelsSlice = createSlice({
   },
 })
 
-export const channelsSelectors = channelsAdapter.getSelectors(state => state.channels)
+// Безопасный селектор для получения state.channels
+// Важно: проверяем, что state существует и имеет свойство channels
+const selectChannelsState = (state) => {
+  if (!state || !state.channels) {
+    return initialState;
+  }
+  return state.channels;
+};
+
+export const channelsSelectors = channelsAdapter.getSelectors(selectChannelsState);
 export const { setChannels, addChannel, removeChannel, renameChannel, setCurrentChannelId } = channelsSlice.actions
 
-export default channelsSlice.reducerж
+export default channelsSlice.reducer;

@@ -1,11 +1,11 @@
 
 import * as yup from 'yup';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
-import { addChannel, setCurrentChannelId } from '../../features/channels/channelsSlice';
+import { setCurrentChannelId } from '../../features/channels/channelsSlice';
 import { channelsSelectors } from '../../features/channels/channelsSlice';
-
 import { useDispatch, useSelector } from 'react-redux';
-import socket from '../../socket';
+import { useEffect, useRef } from 'react';
+import api from '../../api/axios';
 
 const schema = yup.object().shape({
   name: yup.string().trim().min(3, 'Минимум 3 символа').max(20, 'Максимум 20 символов').required('Обязательное поле'),
@@ -13,52 +13,81 @@ const schema = yup.object().shape({
 
 export default function AddChannelModal({ onClose }) {
     const dispatch = useDispatch();
-    const channels = useSelector(channelsSelectors.selectAll) || [];
-    return (
-        <div className="modal">
-            <Formik
-                initialValues={{ name: '' }}
-                validationSchema={schema}
-                onSubmit={(values, { setSubmitting, setFieldError }) => {
-                    const name = values.name.trim();
+    const inputRef = useRef(null);
+    const channels = useSelector((state) => {
+      try {
+        return channelsSelectors.selectAll(state) || [];
+      } catch (error) {
+        console.error('Ошибка при получении каналов:', error);
+        return [];
+      }
+    });
 
-                    // Проверка на дубликат
-                    if (channels.some((channel) => channel.name === name)) {
-                        setFieldError('name', 'Канал с таким именем уже существует');
-                        setSubmitting(false);
-                        return;
-                    }
-                
-                    // Отправляем событие на сервер
-                    socket.emit('newChannel', { name }, (response) => {
-                        const channel = response.data
-                        if (channel) {
-                            dispatch(addChannel(channel));
+    useEffect(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    }, []);
+
+    return (
+        <>
+            <div className="modal-header">
+                <h5 className="modal-title">Добавить канал</h5>
+                <button type="button" className="btn-close" onClick={onClose}></button>
+            </div>
+            <div className="modal-body">
+                <Formik
+                    initialValues={{ name: '' }}
+                    validationSchema={schema}
+                    onSubmit={async (values, { setSubmitting, setFieldError }) => {
+                        const name = values.name.trim();
+
+                        // Проверка на дубликат
+                        if (channels.some((channel) => channel.name === name)) {
+                            setFieldError('name', 'Канал с таким именем уже существует');
+                            setSubmitting(false);
+                            return;
+                        }
+                    
+                        // Используем REST API для создания канала
+                        try {
+                            const apiPath = import.meta.env.PROD ? '/api/v1/channels' : '/api/channels';
+                            const { data: channel } = await api.post(apiPath, { name });
+                            // Socket событие newChannel придет автоматически от сервера
+                            // и обработается в ChatPage, поэтому здесь не нужно обновлять store
                             dispatch(setCurrentChannelId(channel.id));
                             onClose();
-                        } else {
-                        setFieldError('name',   'Ошибка создания канала');
+                        } catch {
+                            setFieldError('name', 'Ошибка создания канала');
+                        } finally {
+                            setSubmitting(false);
                         }
-                        setSubmitting(false);
-                    });
-                }}
-            >
-                {({ isSubmitting }) => (
-                <Form>
-                    <label htmlFor="name">+</label>
-                    <Field id="name" name="name" className="form-control" />
-                    <ErrorMessage name="name" component="div" className="text-danger" />
-                    <div className="d-flex justify-content-end">
-                    <button type="button" className="btn btn-secondary me-2" onClick={onClose}>
-                        Отменить
-                    </button>
-                    <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
-                        Отправить
-                    </button>
-                    </div>
-                </Form>
-                )}
-            </Formik>
-        </div>
+                    }}
+                >
+                    {({ isSubmitting }) => (
+                    <Form>
+                        <div className="mb-3">
+                            <label htmlFor="name" className="form-label">Имя канала</label>
+                            <Field 
+                                id="name" 
+                                name="name" 
+                                className="form-control"
+                                innerRef={inputRef}
+                            />
+                            <ErrorMessage name="name" component="div" className="text-danger" />
+                        </div>
+                        <div className="modal-footer">
+                            <button type="button" className="btn btn-secondary" onClick={onClose}>
+                                Отменить
+                            </button>
+                            <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+                                Отправить
+                            </button>
+                        </div>
+                    </Form>
+                    )}
+                </Formik>
+            </div>
+        </>
     )
 }

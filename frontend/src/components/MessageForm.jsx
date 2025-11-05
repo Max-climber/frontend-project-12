@@ -3,13 +3,13 @@ import { addMessage } from '../features/messages/messagesSlice';
 
 export default function MessageForm() {
   const dispatch = useDispatch();
-  const currentChannelId = useSelector((state) => state.channels.currentChannelId);
+  const currentChannelId = useSelector((state) => state.channels?.currentChannelId);
   const username = useSelector((state) => state.user.username);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const text = e.target.elements.message.value.trim();
-    if (!text) return;
+    if (!text || !currentChannelId) return;
 
     dispatch(addMessage({
       id: Date.now(),

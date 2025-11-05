@@ -1,62 +1,86 @@
 // для пути /login
-import { Formik, Form, Field } from 'formik';
-import axios from 'axios';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setUser } from '../features/users/userSlice';
+import api from '../api/axios';
 
 export const LoginPage = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
     return (
-        <Formik
-            initialValues={{ 
-                username: '', 
-                password: '',
-             }}
-            onSubmit={ async ( values, { setSubmitting, setStatus}) => {
-                try {
-                    const response = await axios.post('/api/v1/login', values); //отправка данных формы на сервер
-                    localStorage.setItem('token', response.data.token);
+        <div className="container-fluid h-100">
+            <div className="row justify-content-center align-content-center h-100">
+                <div className="col-12 col-md-8 col-xxl-6">
+                    <div className="card shadow-sm">
+                        <div className="card-body p-5">
+                            <div className="w-100">
+                                <h2 className="text-center mb-4">Войти</h2>
+                                <Formik
+                                        initialValues={{ 
+                                            username: '', 
+                                            password: '',
+                                         }}
+                                        onSubmit={ async ( values, { setSubmitting, setStatus}) => {
+                                            try {
+                                                const apiPath = import.meta.env.PROD ? '/api/v1/login' : '/api/login';
+                                                const response = await api.post(apiPath, values);
+                                                localStorage.setItem('token', response.data.token);
 
-                    dispatch(setUser(values.username)) // сохраняем имя пользователя в store
-                    
-                    navigate('/') //если получили токен, значит, пользователь авторзован и можно перенаправлять на главную страницу
-                } catch (e) {
-                    console.error(e);
-                    setStatus('Неверные имя пользователя или пароль')
-                } finally {
-                    setSubmitting(false); 
-                }
-                
-            }}
-        >
-            {(formik) => {
-                const { status} = formik;
-                return (<Form>
-                    <h1>Войти</h1>
-                <div className="form-group">
-                    <label htmlFor="username">Ваш ник</label>
-                    <Field
-                    type="text"
-                    name="username"
-                    className="form-control"
-                    />
+                                                dispatch(setUser(values.username));
+                                                
+                                                navigate('/');
+                                            } catch (e) {
+                                                console.error(e);
+                                                setStatus('Неверные имя пользователя или пароль');
+                                            } finally {
+                                                setSubmitting(false); 
+                                            }
+                                        }}
+                                    >
+                                        {(formik) => {
+                                            const { status, isSubmitting } = formik;
+                                            return (
+                                                <Form>
+                                                    <div className="mb-3">
+                                                        <label htmlFor="username" className="form-label">Ваш ник</label>
+                                                        <Field
+                                                            id="username"
+                                                            type="text"
+                                                            name="username"
+                                                            className="form-control"
+                                                            autoComplete="username"
+                                                        />
+                                                    </div>
+                                                    <div className="mb-3">
+                                                        <label htmlFor="password" className="form-label">Пароль</label>
+                                                        <Field
+                                                            id="password"
+                                                            type="password"
+                                                            name="password"
+                                                            className="form-control"
+                                                            autoComplete="current-password"
+                                                        />
+                                                    </div>
+                                                    { status && <div className='text-danger mb-3'>{status}</div> }
+                                                    <button type="submit" className="btn btn-primary w-100 mb-3" disabled={isSubmitting}>
+                                                        Войти
+                                                    </button>
+                                                    <div className="text-center">
+                                                        <span>Нет аккаунта? </span>
+                                                        <Link to="/signup">Регистрация</Link>
+                                                    </div>
+                                                </Form>
+                                            );
+                                        }}
+                                    </Formik>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div className="form-group">
-                    <label htmlFor="password">пароль</label>
-                    <Field
-                    type="password"
-                    name="password"
-                    className="form-control"
-                    />
-                </div>
-                { status && <div className='text-danger'>{status}</div> }
-                <button type="submit">Войти</button>
-                </Form> 
-                )
-            }}
-        </Formik>
-    )
+            </div>
+        </div>
+    );
 }

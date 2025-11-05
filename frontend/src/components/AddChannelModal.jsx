@@ -2,7 +2,7 @@
 import { Modal, Button, Formik, Form, Field, ErrorMessage } from 'formik';
 import * as yup from 'yup';
 import { useDispatch, useSelector } from 'react-redux';
-import { addChannel, setCurrentChannelId } from '../../features/channels/channelsSlice';
+import { addChannel, setCurrentChannelId, channelsSelectors } from '../../features/channels/channelsSlice';
 import api from '../../api/axios'; 
 
 const schema = yup.object().shape({
@@ -11,9 +11,14 @@ const schema = yup.object().shape({
 
 export default function AddChannelModal({ show, handleClose }) {
   const dispatch = useDispatch();
-  const channels = useSelector((state) =>
-    state.channels.entities ? Object.values(state.channels.entities) : []
-  );
+  const channels = useSelector((state) => {
+    try {
+      return channelsSelectors.selectAll(state) || [];
+    } catch (error) {
+      console.error('Ошибка при получении каналов:', error);
+      return [];
+    }
+  });
 
   const handleSubmit = async (values, { setSubmitting, setFieldError }) => {
     const name = values.name.trim();
@@ -25,7 +30,10 @@ export default function AddChannelModal({ show, handleClose }) {
     }
 
     try {
-      const { data } = await api.post('/api/channels', { name }); // тут токен подставляется автоматически
+      // В dev-режиме proxy переписывает /api на /api/v1
+      // В prod используем прямой путь к API
+      const apiPath = import.meta.env.PROD ? '/api/v1/channels' : '/api/channels';
+      const { data } = await api.post(apiPath, { name }); // тут токен подставляется автоматически
       dispatch(addChannel(data));
       dispatch(setCurrentChannelId(data.id));
       handleClose();

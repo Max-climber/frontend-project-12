@@ -5,10 +5,16 @@ import { channelsSelectors } from '../features/channels/channelsSlice';
 import ChannelItem from './ChannelItem';
 
 export default function ChannelsList({ openModal }) {
-  const channels = useSelector(channelsSelectors.selectAll) || [];
-  const currentChannelId = useSelector((state) => state.channels.currentChannelId);
+  const channels = useSelector((state) => {
+    try {
+      return channelsSelectors.selectAll(state) || [];
+    } catch (error) {
+      console.error('Ошибка при получении каналов:', error);
+      return [];
+    }
+  });
+  const currentChannelId = useSelector((state) => state.channels?.currentChannelId);
 
-  console.log(channels); // для проверки, временно 
 
   return (
     <div className="col-4 col-md-2 border-end px-0 bg-light flex-column h-100 d-flex">
