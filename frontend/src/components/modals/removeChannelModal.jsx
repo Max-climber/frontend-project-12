@@ -10,8 +10,7 @@ export default function RemoveChannelModal({ onClose, channel }) {
     try {
       const apiPath = import.meta.env.PROD ? `/api/v1/channels/${channel.id}` : `/api/channels/${channel.id}`;
       await api.delete(apiPath);
-      // Socket событие removeChannel придет автоматически от сервера
-      // и обработается в ChatPage, поэтому здесь не нужно обновлять store
+    
       dispatch(removeMessagesByChannelsId(channel.id));
       dispatch(setCurrentChannelId(1)); // переходим в дефолтный канал
       onClose();

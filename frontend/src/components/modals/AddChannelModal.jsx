@@ -53,8 +53,7 @@ export default function AddChannelModal({ onClose }) {
                         try {
                             const apiPath = import.meta.env.PROD ? '/api/v1/channels' : '/api/channels';
                             const { data: channel } = await api.post(apiPath, { name });
-                            // Socket событие newChannel придет автоматически от сервера
-                            // и обработается в ChatPage, поэтому здесь не нужно обновлять store
+                            
                             dispatch(setCurrentChannelId(channel.id));
                             onClose();
                         } catch {
