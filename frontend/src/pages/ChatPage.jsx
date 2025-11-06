@@ -1,25 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  setChannels,
-  setCurrentChannelId,
-  addChannel,
-  removeChannel,
-  renameChannel,
-} from '../features/channels/channelsSlice';
-import {
-  setMessages,
-  addMessage,
-  removeMessagesByChannelsId,
-} from '../features/messages/messagesSlice';
+import { setChannels, setCurrentChannelId, addChannel, removeChannel, renameChannel } from '../features/channels/channelsSlice';
+import { setMessages, addMessage, removeMessagesByChannelsId } from '../features/messages/messagesSlice';
 import ChannelsList from '../components/ChannelsList';
 import MessagesBox from '../components/MessagesBox';
 import MessageForm from '../components/messageForm';
 import AddChannelModal from '../components/modals/AddChannelModal';
 import RemoveChannelModal from '../components/modals/removeChannelModal';
 import RenameChannelModal from '../components/modals/renameChannelModal';
-import api from '../api/axios';
+import axios from 'axios';
 import socket from '../socket';
 
 const ChatPage = () => {
@@ -28,6 +18,7 @@ const ChatPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const currentChannelId = useSelector((state) => state.channels?.currentChannelId);
+  const isInitialized = useRef(false);
 
   const openModal = (type, channel = null) => {
     setModalType(type);
@@ -39,6 +30,7 @@ const ChatPage = () => {
     setModalChannel(null);
   };
 
+  // Эффект для начальной загрузки данных (выполняется только один раз)
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -48,51 +40,88 @@ const ChatPage = () => {
 
     const fetchData = async () => {
       try {
-        // proxy перепишет на /api/v1
+        const token = localStorage.getItem('token');
+        const headers = {
+          Authorization: `Bearer ${token}`,
+        };
+
+        // Получаем каналы и сообщения отдельно
+        // В dev-режиме proxy переписывает /api на /api/v1
+        // В prod используем прямой путь /api/v1
+        const channelsPath = import.meta.env.PROD ? '/api/v1/channels' : '/api/channels';
+        const messagesPath = import.meta.env.PROD ? '/api/v1/messages' : '/api/messages';
+        
         const [channelsResponse, messagesResponse] = await Promise.all([
-          api.get('/channels'),
-          api.get('/messages'),
+          axios.get(channelsPath, { headers }),
+          axios.get(messagesPath, { headers }),
         ]);
 
         const channels = channelsResponse.data;
         const messages = messagesResponse.data;
 
+        // Проверяем, что получили массивы
         if (!Array.isArray(channels) || !Array.isArray(messages)) {
-          console.error('Неверный формат данных от сервера.');
+          console.error('Неверный формат данных от сервера. Возможно, сервер API не запущен или неправильно настроен.');
+          console.error('Channels:', channels);
+          console.error('Messages:', messages);
           return;
         }
 
         dispatch(setChannels(channels));
         dispatch(setMessages(messages));
 
-        const defaultChannel = channels.find((ch) => ch.name === 'general') || channels[0];
-        if (defaultChannel) {
-          dispatch(setCurrentChannelId(defaultChannel.id));
+        // Устанавливаем дефолтный канал только при первой загрузке
+        // Это предотвращает перезапись выбранного канала при повторной загрузке
+        if (!isInitialized.current) {
+          const defaultChannel = channels.find(ch => ch.name === 'general') || channels[0];
+          if (defaultChannel) {
+            dispatch(setCurrentChannelId(defaultChannel.id));
+          }
+          isInitialized.current = true;
         }
       } catch (e) {
         console.error('Ошибка при получении данных:', e);
         if (e.response) {
           console.error('Статус ответа:', e.response.status);
           console.error('Данные ответа:', e.response.data);
+          // Если получили HTML вместо JSON, значит API сервер не запущен
+          if (typeof e.response.data === 'string' && e.response.data.includes('<!doctype html>')) {
+            console.error('API сервер не запущен или недоступен.');
+          }
+        } else if (e.code === 'ERR_NETWORK' || e.message?.includes('Network Error')) {
+          console.error('Ошибка сети: API сервер недоступен.');
         }
       }
     };
 
     fetchData();
+  }, [dispatch, navigate]);
 
-    // Подписка на события socket.io
-    socket.on('newMessage', (message) => dispatch(addMessage(message)));
-    socket.on('newChannel', (channel) => dispatch(addChannel(channel)));
+  // Эффект для подписки на socket события
+  useEffect(() => {
+    // Подписка на socket события
+    socket.on('newMessage', (message) => {
+      dispatch(addMessage(message));
+    });
+
+    socket.on('newChannel', (channel) => {
+      dispatch(addChannel(channel));
+    });
+
     socket.on('removeChannel', (data) => {
       dispatch(removeChannel(data.id));
       dispatch(removeMessagesByChannelsId(data.id));
-      if (currentChannelId === data.id) {
+      // Используем текущее значение currentChannelId из селектора
+      const currentId = currentChannelId;
+      if (currentId === data.id) {
+        // Если удаленный канал был текущим, переключаемся на general или первый канал
         dispatch(setCurrentChannelId(1));
       }
     });
-    socket.on('renameChannel', (data) =>
-      dispatch(renameChannel({ id: data.id, changes: { name: data.name } }))
-    );
+
+    socket.on('renameChannel', (data) => {
+      dispatch(renameChannel({ id: data.id, changes: { name: data.name } }));
+    });
 
     return () => {
       socket.off('newMessage');
@@ -100,26 +129,56 @@ const ChatPage = () => {
       socket.off('removeChannel');
       socket.off('renameChannel');
     };
-  }, [dispatch, navigate, currentChannelId]);
+  }, [dispatch, currentChannelId]);
 
   return (
-    <div className="container h-100 my-4 overflow-hidden rounded shadow">
-      <div className="row h-100 bg-white flex-md-row">
-        <ChannelsList openModal={openModal} />
-        <div className="col p-0 h-100 d-flex flex-column">
-          <MessagesBox currentChannelId={currentChannelId} />
-          <MessageForm />
+    <>
+      <div className="container h-100 my-4 overflow-hidden rounded shadow">
+        <div className="row h-100 bg-white flex-md-row">
+          <ChannelsList openModal={openModal} />
+          <div className="col p-0 h-100 d-flex flex-column">
+            <MessagesBox currentChannelId={currentChannelId} />
+            <MessageForm />
+          </div>
         </div>
       </div>
-
-      {modalType === 'add' && <AddChannelModal show handleClose={closeModal} />}
+      {modalType === 'add' && (
+        <>
+          <div className="modal-backdrop show" style={{ zIndex: 1040 }}></div>
+          <div className="modal show" style={{ display: 'block', position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1050 }} tabIndex="-1" role="dialog" onClick={(e) => e.target === e.currentTarget && closeModal()}>
+            <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-content">
+                <AddChannelModal onClose={closeModal} />
+              </div>
+            </div>
+          </div>
+        </>
+      )}
       {modalType === 'rename' && (
-        <RenameChannelModal show handleClose={closeModal} channel={modalChannel} />
+        <>
+          <div className="modal-backdrop show" style={{ zIndex: 1040 }}></div>
+          <div className="modal show" style={{ display: 'block', position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1050 }} tabIndex="-1" role="dialog" onClick={(e) => e.target === e.currentTarget && closeModal()}>
+            <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-content">
+                <RenameChannelModal onClose={closeModal} channel={modalChannel} />
+              </div>
+            </div>
+          </div>
+        </>
       )}
       {modalType === 'remove' && (
-        <RemoveChannelModal show handleClose={closeModal} channel={modalChannel} />
+        <>
+          <div className="modal-backdrop show" style={{ zIndex: 1040 }}></div>
+          <div className="modal show" style={{ display: 'block', position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1050 }} tabIndex="-1" role="dialog" onClick={(e) => e.target === e.currentTarget && closeModal()}>
+            <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-content">
+                <RemoveChannelModal onClose={closeModal} channel={modalChannel} />
+              </div>
+            </div>
+          </div>
+        </>
       )}
-    </div>
+    </>
   );
 };
 

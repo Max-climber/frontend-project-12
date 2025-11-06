@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setUser } from '../features/users/userSlice';
-import api from '../api/axios';
+import axios from 'axios';
 
 export const LoginPage = () => {
     const navigate = useNavigate();
@@ -25,8 +25,10 @@ export const LoginPage = () => {
                                          }}
                                         onSubmit={ async ( values, { setSubmitting, setStatus}) => {
                                             try {
+                                                // В dev-режиме proxy переписывает /api на /api/v1
+                                                // В prod используем прямой путь /api/v1
                                                 const apiPath = import.meta.env.PROD ? '/api/v1/login' : '/api/login';
-                                                const response = await api.post(apiPath, values);
+                                                const response = await axios.post(apiPath, values);
                                                 localStorage.setItem('token', response.data.token);
 
                                                 dispatch(setUser(values.username));

@@ -5,7 +5,7 @@ import { setCurrentChannelId } from '../../features/channels/channelsSlice';
 import { channelsSelectors } from '../../features/channels/channelsSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useRef } from 'react';
-import api from '../../api/axios';
+import axios from 'axios';
 
 const schema = yup.object().shape({
   name: yup.string().trim().min(3, 'Минимум 3 символа').max(20, 'Максимум 20 символов').required('Обязательное поле'),
@@ -51,9 +51,16 @@ export default function AddChannelModal({ onClose }) {
                     
                         // Используем REST API для создания канала
                         try {
+                            const token = localStorage.getItem('token');
+                            const headers = {
+                                Authorization: `Bearer ${token}`,
+                            };
+                            // В dev-режиме proxy переписывает /api на /api/v1
+                            // В prod используем прямой путь /api/v1
                             const apiPath = import.meta.env.PROD ? '/api/v1/channels' : '/api/channels';
-                            const { data: channel } = await api.post(apiPath, { name });
-                            
+                            const { data: channel } = await axios.post(apiPath, { name }, { headers });
+                            // Socket событие newChannel придет автоматически от сервера
+                            // и обработается в ChatPage, поэтому здесь не нужно обновлять store
                             dispatch(setCurrentChannelId(channel.id));
                             onClose();
                         } catch {

@@ -3,7 +3,7 @@ import { channelsSelectors } from '../../features/channels/channelsSlice';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as yup from 'yup';
 import { useEffect, useRef } from 'react';
-import api from '../../api/axios';
+import axios from 'axios';
 
 const schema = yup.object().shape({
   name: yup.string().trim().min(3).max(20).required('Обязательное поле'),
@@ -48,8 +48,14 @@ export default function RenameChannelModal({ onClose, channel }) {
           }
 
           try {
+            const token = localStorage.getItem('token');
+            const headers = {
+              Authorization: `Bearer ${token}`,
+            };
+            // В dev-режиме proxy переписывает /api на /api/v1
+            // В prod используем прямой путь /api/v1
             const apiPath = import.meta.env.PROD ? `/api/v1/channels/${channel.id}` : `/api/channels/${channel.id}`;
-            await api.patch(apiPath, { name });
+            await axios.patch(apiPath, { name }, { headers });
             // Socket событие renameChannel придет автоматически от сервера
             // и обработается в ChatPage, поэтому здесь не нужно обновлять store
             onClose();

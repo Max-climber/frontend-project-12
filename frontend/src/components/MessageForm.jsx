@@ -1,24 +1,35 @@
-import { useDispatch, useSelector } from 'react-redux';
-import { addMessage } from '../features/messages/messagesSlice';
+import { useSelector } from 'react-redux';
+import axios from 'axios';
 
 export default function MessageForm() {
-  const dispatch = useDispatch();
   const currentChannelId = useSelector((state) => state.channels?.currentChannelId);
   const username = useSelector((state) => state.user.username);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const text = e.target.elements.message.value.trim();
     if (!text || !currentChannelId) return;
 
-    dispatch(addMessage({
-      id: Date.now(),
-      body: text,
-      channelId: currentChannelId,
-      username,
-    }));
-
-    e.target.reset();
+    try {
+      const token = localStorage.getItem('token');
+      const headers = {
+        Authorization: `Bearer ${token}`,
+      };
+      // В dev-режиме proxy переписывает /api на /api/v1
+      // В prod используем прямой путь /api/v1
+      // Socket событие newMessage придет автоматически от сервера
+      // и обработается в ChatPage, поэтому здесь не нужно обновлять store
+      const apiPath = import.meta.env.PROD ? '/api/v1/messages' : '/api/messages';
+      await axios.post(apiPath, {
+        body: text,
+        channelId: currentChannelId,
+        username,
+      }, { headers });
+      
+      e.target.reset();
+    } catch (error) {
+      console.error('Ошибка при отправке сообщения:', error);
+    }
   };
 
   return (

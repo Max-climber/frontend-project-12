@@ -1,21 +1,25 @@
-import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
 
 export default defineConfig({
   plugins: [react()],
+  build: {
+    sourcemap: true,
+  },
+  resolve: {
+    dedupe: ['react', 'react-dom'],
+  },
   server: {
     port: 5002,
-    open: true,
     proxy: {
       '/api': {
         target: 'http://localhost:5001',
-        changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '/api/v1'),
       },
       '/socket.io': {
         target: 'ws://localhost:5001',
         ws: true,
-        changeOrigin: true,
+        rewriteWsOrigin: true,
       },
     },
   },

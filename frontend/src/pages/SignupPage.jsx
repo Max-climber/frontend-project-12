@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import * as yup from 'yup';
 import { setUser } from '../features/users/userSlice';
-import api from '../api/axios';
+import axios from 'axios';
 
 const schema = yup.object().shape({
   username: yup
@@ -29,9 +29,9 @@ export const SignupPage = () => {
   const handleSubmit = async (values, { setSubmitting, setFieldError }) => {
     try {
       // В dev-режиме proxy переписывает /api на /api/v1
-      // В prod используем прямой путь к API
+      // В prod используем прямой путь /api/v1
       const apiPath = import.meta.env.PROD ? '/api/v1/signup' : '/api/signup';
-      const response = await api.post(apiPath, {
+      const response = await axios.post(apiPath, {
         username: values.username.trim(),
         password: values.password,
       });

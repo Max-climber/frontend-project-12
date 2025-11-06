@@ -3,7 +3,7 @@ import { Modal, Button, Formik, Form, Field, ErrorMessage } from 'formik';
 import * as yup from 'yup';
 import { useDispatch, useSelector } from 'react-redux';
 import { addChannel, setCurrentChannelId, channelsSelectors } from '../../features/channels/channelsSlice';
-import api from '../../api/axios'; 
+import axios from 'axios'; 
 
 const schema = yup.object().shape({
   name: yup.string().trim().min(3).max(20).required('Обязательное поле'),
@@ -30,10 +30,14 @@ export default function AddChannelModal({ show, handleClose }) {
     }
 
     try {
+      const token = localStorage.getItem('token');
+      const headers = {
+        Authorization: `Bearer ${token}`,
+      };
       // В dev-режиме proxy переписывает /api на /api/v1
-      // В prod используем прямой путь к API
+      // В prod используем прямой путь /api/v1
       const apiPath = import.meta.env.PROD ? '/api/v1/channels' : '/api/channels';
-      const { data } = await api.post(apiPath, { name }); // тут токен подставляется автоматически
+      const { data } = await axios.post(apiPath, { name }, { headers });
       dispatch(addChannel(data));
       dispatch(setCurrentChannelId(data.id));
       handleClose();
