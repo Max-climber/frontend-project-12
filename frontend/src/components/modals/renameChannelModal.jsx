@@ -1,15 +1,14 @@
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'react-toastify';
 import { channelsSelectors } from '../../features/channels/channelsSlice';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as yup from 'yup';
 import { useEffect, useRef } from 'react';
 import axios from 'axios';
 
-const schema = yup.object().shape({
-  name: yup.string().trim().min(3).max(20).required('Обязательное поле'),
-});
-
 export default function RenameChannelModal({ onClose, channel }) {
+  const { t } = useTranslation();
   const inputRef = useRef(null);
   const channels = useSelector((state) => {
     try {
@@ -18,6 +17,10 @@ export default function RenameChannelModal({ onClose, channel }) {
       console.error('Ошибка при получении каналов:', error);
       return [];
     }
+  });
+
+  const schema = yup.object().shape({
+    name: yup.string().trim().min(3).max(20).required(t('channels.validation.required')),
   });
 
   useEffect(() => {
@@ -30,7 +33,7 @@ export default function RenameChannelModal({ onClose, channel }) {
   return (
     <>
       <div className="modal-header">
-        <h5 className="modal-title">Переименовать канал</h5>
+        <h5 className="modal-title">{t('channels.rename')}</h5>
         <button type="button" className="btn-close" onClick={onClose}></button>
       </div>
       <div className="modal-body">
@@ -42,7 +45,7 @@ export default function RenameChannelModal({ onClose, channel }) {
           
           // Проверка на дубликат (исключая текущий канал)
           if (channels.some((ch) => ch.name === name && ch.id !== channel.id)) {
-            setFieldError('name', 'Канал с таким именем уже существует');
+            setFieldError('name', t('channels.validation.duplicate'));
             setSubmitting(false);
             return;
           }
@@ -58,9 +61,10 @@ export default function RenameChannelModal({ onClose, channel }) {
             await axios.patch(apiPath, { name }, { headers });
             // Socket событие renameChannel придет автоматически от сервера
             // и обработается в ChatPage, поэтому здесь не нужно обновлять store
+            toast.success(t('toast.channelRenamed'));
             onClose();
           } catch {
-            setFieldError('name', 'Ошибка переименования канала');
+            setFieldError('name', t('channels.errors.rename'));
           } finally {
             setSubmitting(false);
           }
@@ -69,7 +73,7 @@ export default function RenameChannelModal({ onClose, channel }) {
         {({ isSubmitting }) => (
           <Form>
             <div className="mb-3">
-              <label htmlFor="name" className="form-label">Имя канала</label>
+              <label htmlFor="name" className="form-label">{t('channels.name')}</label>
               <Field 
                 id="name" 
                 name="name" 
@@ -80,10 +84,10 @@ export default function RenameChannelModal({ onClose, channel }) {
             </div>
             <div className="modal-footer">
               <button type="button" className="btn btn-secondary" onClick={onClose}>
-                Отмена
+                {t('modals.cancel')}
               </button>
               <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
-                Сохранить
+                {t('modals.save')}
               </button>
             </div>
           </Form>

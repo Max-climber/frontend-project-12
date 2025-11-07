@@ -1,8 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { clearUser } from '../features/users/userSlice';
 
 export default function Header() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const username = useSelector((state) => state.user?.username);
@@ -18,7 +20,7 @@ export default function Header() {
     <nav className="shadow-sm navbar navbar-expand-lg navbar-light bg-white">
       <div className="container-fluid">
         <Link to="/" className="navbar-brand">
-          Hexlet Chat
+          {t('header.brand')}
         </Link>
         {token && username && (
           <button
@@ -26,7 +28,7 @@ export default function Header() {
             className="btn btn-primary"
             onClick={handleLogout}
           >
-            Выйти
+            {t('header.exit')}
           </button>
         )}
       </div>

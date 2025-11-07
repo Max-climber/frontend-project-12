@@ -3,10 +3,12 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { setUser } from '../features/users/userSlice';
 import axios from 'axios';
 
 export const LoginPage = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
@@ -17,7 +19,7 @@ export const LoginPage = () => {
                     <div className="card shadow-sm">
                         <div className="card-body p-5">
                             <div className="w-100">
-                                <h2 className="text-center mb-4">Войти</h2>
+                                <h2 className="text-center mb-4">{t('loginPage.title')}</h2>
                                 <Formik
                                         initialValues={{ 
                                             username: '', 
@@ -36,7 +38,7 @@ export const LoginPage = () => {
                                                 navigate('/');
                                             } catch (e) {
                                                 console.error(e);
-                                                setStatus('Неверные имя пользователя или пароль');
+                                                setStatus(t('loginPage.error'));
                                             } finally {
                                                 setSubmitting(false); 
                                             }
@@ -47,7 +49,7 @@ export const LoginPage = () => {
                                             return (
                                                 <Form>
                                                     <div className="mb-3">
-                                                        <label htmlFor="username" className="form-label">Ваш ник</label>
+                                                        <label htmlFor="username" className="form-label">{t('loginPage.username')}</label>
                                                         <Field
                                                             id="username"
                                                             type="text"
@@ -57,7 +59,7 @@ export const LoginPage = () => {
                                                         />
                                                     </div>
                                                     <div className="mb-3">
-                                                        <label htmlFor="password" className="form-label">Пароль</label>
+                                                        <label htmlFor="password" className="form-label">{t('loginPage.password')}</label>
                                                         <Field
                                                             id="password"
                                                             type="password"
@@ -68,11 +70,11 @@ export const LoginPage = () => {
                                                     </div>
                                                     { status && <div className='text-danger mb-3'>{status}</div> }
                                                     <button type="submit" className="btn btn-primary w-100 mb-3" disabled={isSubmitting}>
-                                                        Войти
+                                                        {t('loginPage.login')}
                                                     </button>
                                                     <div className="text-center">
-                                                        <span>Нет аккаунта? </span>
-                                                        <Link to="/signup">Регистрация</Link>
+                                                        <span>{t('loginPage.noAccount')} </span>
+                                                        <Link to="/signup">{t('loginPage.signup')}</Link>
                                                     </div>
                                                 </Form>
                                             );

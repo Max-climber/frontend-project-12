@@ -1,30 +1,32 @@
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import * as yup from 'yup';
 import { setUser } from '../features/users/userSlice';
 import axios from 'axios';
 
-const schema = yup.object().shape({
-  username: yup
-    .string()
-    .trim()
-    .min(3, 'От 3 до 20 символов')
-    .max(20, 'От 3 до 20 символов')
-    .required('Обязательное поле'),
-  password: yup
-    .string()
-    .min(6, 'Не менее 6 символов')
-    .required('Обязательное поле'),
-  passwordConfirmation: yup
-    .string()
-    .oneOf([yup.ref('password')], 'Пароли должны совпадать')
-    .required('Обязательное поле'),
-});
-
 export const SignupPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  const schema = yup.object().shape({
+    username: yup
+      .string()
+      .trim()
+      .min(3, t('signupPage.validation.usernameLength'))
+      .max(20, t('signupPage.validation.usernameLength'))
+      .required(t('signupPage.validation.required')),
+    password: yup
+      .string()
+      .min(6, t('signupPage.validation.passwordMin'))
+      .required(t('signupPage.validation.required')),
+    passwordConfirmation: yup
+      .string()
+      .oneOf([yup.ref('password')], t('signupPage.validation.passwordsMatch'))
+      .required(t('signupPage.validation.required')),
+  });
 
   const handleSubmit = async (values, { setSubmitting, setFieldError }) => {
     try {
@@ -41,9 +43,9 @@ export const SignupPage = () => {
       navigate('/');
     } catch (e) {
       if (e.response?.status === 409) {
-        setFieldError('username', 'Такой пользователь уже существует');
+        setFieldError('username', t('signupPage.errors.userExists'));
       } else {
-        setFieldError('username', 'Ошибка регистрации');
+        setFieldError('username', t('signupPage.errors.registrationError'));
       }
     } finally {
       setSubmitting(false);
@@ -57,7 +59,7 @@ export const SignupPage = () => {
           <div className="card shadow-sm">
             <div className="card-body p-5">
               <div className="w-100">
-                <h2 className="text-center mb-4">Регистрация</h2>
+                <h2 className="text-center mb-4">{t('signupPage.title')}</h2>
                 <Formik
                     initialValues={{
                       username: '',
@@ -71,7 +73,7 @@ export const SignupPage = () => {
                       <Form>
                         <div className="mb-3">
                           <label htmlFor="username" className="form-label">
-                            Имя пользователя
+                            {t('signupPage.username')}
                           </label>
                           <Field
                             id="username"
@@ -88,7 +90,7 @@ export const SignupPage = () => {
                         </div>
                         <div className="mb-3">
                           <label htmlFor="password" className="form-label">
-                            Пароль
+                            {t('signupPage.password')}
                           </label>
                           <Field
                             id="password"
@@ -108,7 +110,7 @@ export const SignupPage = () => {
                             htmlFor="passwordConfirmation"
                             className="form-label"
                           >
-                            Подтвердите пароль
+                            {t('signupPage.passwordConfirmation')}
                           </label>
                           <Field
                             id="passwordConfirmation"
@@ -128,11 +130,11 @@ export const SignupPage = () => {
                           className="btn btn-primary w-100 mb-3"
                           disabled={isSubmitting}
                         >
-                          Зарегистрироваться
+                          {t('signupPage.signup')}
                         </button>
                         <div className="text-center">
-                          <span>Уже есть аккаунт? </span>
-                          <Link to="/login">Войти</Link>
+                          <span>{t('signupPage.hasAccount')} </span>
+                          <Link to="/login">{t('signupPage.login')}</Link>
                         </div>
                       </Form>
                     )}

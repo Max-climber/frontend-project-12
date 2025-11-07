@@ -1,6 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'react-toastify';
 import { setChannels, setCurrentChannelId, addChannel, removeChannel, renameChannel } from '../features/channels/channelsSlice';
 import { setMessages, addMessage, removeMessagesByChannelsId } from '../features/messages/messagesSlice';
 import ChannelsList from '../components/ChannelsList';
@@ -13,6 +15,7 @@ import axios from 'axios';
 import socket from '../socket';
 
 const ChatPage = () => {
+  const { t } = useTranslation();
   const [modalType, setModalType] = useState(null);
   const [modalChannel, setModalChannel] = useState(null);
   const navigate = useNavigate();
@@ -64,6 +67,7 @@ const ChatPage = () => {
           console.error('Неверный формат данных от сервера. Возможно, сервер API не запущен или неправильно настроен.');
           console.error('Channels:', channels);
           console.error('Messages:', messages);
+          toast.error(t('toast.dataLoadError'));
           return;
         }
 
@@ -87,15 +91,21 @@ const ChatPage = () => {
           // Если получили HTML вместо JSON, значит API сервер не запущен
           if (typeof e.response.data === 'string' && e.response.data.includes('<!doctype html>')) {
             console.error('API сервер не запущен или недоступен.');
+            toast.error(t('toast.dataLoadError'));
+          } else {
+            toast.error(t('toast.dataLoadError'));
           }
         } else if (e.code === 'ERR_NETWORK' || e.message?.includes('Network Error')) {
           console.error('Ошибка сети: API сервер недоступен.');
+          toast.error(t('toast.networkError'));
+        } else {
+          toast.error(t('toast.dataLoadError'));
         }
       }
     };
 
     fetchData();
-  }, [dispatch, navigate]);
+  }, [dispatch, navigate, t]);
 
   // Эффект для подписки на socket события
   useEffect(() => {
@@ -106,11 +116,13 @@ const ChatPage = () => {
 
     socket.on('newChannel', (channel) => {
       dispatch(addChannel(channel));
+      // Уведомление показывается в AddChannelModal после успешного API запроса
     });
 
     socket.on('removeChannel', (data) => {
       dispatch(removeChannel(data.id));
       dispatch(removeMessagesByChannelsId(data.id));
+      // Уведомление показывается в RemoveChannelModal после успешного API запроса
       // Используем текущее значение currentChannelId из селектора
       const currentId = currentChannelId;
       if (currentId === data.id) {
@@ -121,6 +133,7 @@ const ChatPage = () => {
 
     socket.on('renameChannel', (data) => {
       dispatch(renameChannel({ id: data.id, changes: { name: data.name } }));
+      // Уведомление показывается в RenameChannelModal после успешного API запроса
     });
 
     return () => {
@@ -129,7 +142,7 @@ const ChatPage = () => {
       socket.off('removeChannel');
       socket.off('renameChannel');
     };
-  }, [dispatch, currentChannelId]);
+  }, [dispatch, currentChannelId, t]);
 
   return (
     <>

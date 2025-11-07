@@ -1,7 +1,9 @@
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 
 export default function MessageForm() {
+  const { t } = useTranslation();
   const currentChannelId = useSelector((state) => state.channels?.currentChannelId);
   const username = useSelector((state) => state.user.username);
 
@@ -35,8 +37,8 @@ export default function MessageForm() {
   return (
     <form onSubmit={handleSubmit} className="mt-auto px-5 py-3">
       <div className="input-group">
-        <input name="message" placeholder="Введите сообщение..." className="form-control" />
-        <button type="submit" className="btn btn-primary">Отправить</button>
+        <input name="message" placeholder={t('messages.placeholder')} className="form-control" />
+        <button type="submit" className="btn btn-primary">{t('messages.send')}</button>
       </div>
     </form>
   );
