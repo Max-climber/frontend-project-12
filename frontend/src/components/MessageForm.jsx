@@ -1,6 +1,7 @@
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
+import { filterProfanity } from '../utils/profanityFilter';
 
 export default function MessageForm() {
   const { t } = useTranslation();
@@ -17,13 +18,15 @@ export default function MessageForm() {
       const headers = {
         Authorization: `Bearer ${token}`,
       };
+      // Фильтруем нецензурные слова перед отправкой
+      const filteredText = filterProfanity(text);
       // В dev-режиме proxy переписывает /api на /api/v1
       // В prod используем прямой путь /api/v1
       // Socket событие newMessage придет автоматически от сервера
       // и обработается в ChatPage, поэтому здесь не нужно обновлять store
       const apiPath = import.meta.env.PROD ? '/api/v1/messages' : '/api/messages';
       await axios.post(apiPath, {
-        body: text,
+        body: filteredText,
         channelId: currentChannelId,
         username,
       }, { headers });

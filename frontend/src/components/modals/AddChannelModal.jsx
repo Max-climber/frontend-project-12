@@ -8,6 +8,7 @@ import { channelsSelectors } from '../../features/channels/channelsSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useRef } from 'react';
 import axios from 'axios';
+import { filterProfanity } from '../../utils/profanityFilter';
 
 export default function AddChannelModal({ onClose }) {
     const { t } = useTranslation();
@@ -44,9 +45,11 @@ export default function AddChannelModal({ onClose }) {
                     validationSchema={schema}
                     onSubmit={async (values, { setSubmitting, setFieldError }) => {
                         const name = values.name.trim();
+                        // Фильтруем нецензурные слова в названии канала
+                        const filteredName = filterProfanity(name);
 
                         // Проверка на дубликат
-                        if (channels.some((channel) => channel.name === name)) {
+                        if (channels.some((channel) => channel.name === filteredName)) {
                             setFieldError('name', t('channels.validation.duplicate'));
                             setSubmitting(false);
                             return;
@@ -61,7 +64,7 @@ export default function AddChannelModal({ onClose }) {
                             // В dev-режиме proxy переписывает /api на /api/v1
                             // В prod используем прямой путь /api/v1
                             const apiPath = import.meta.env.PROD ? '/api/v1/channels' : '/api/channels';
-                            const { data: channel } = await axios.post(apiPath, { name }, { headers });
+                            const { data: channel } = await axios.post(apiPath, { name: filteredName }, { headers });
                             // Socket событие newChannel придет автоматически от сервера
                             // и обработается в ChatPage, поэтому здесь не нужно обновлять store
                             dispatch(setCurrentChannelId(channel.id));
