@@ -20,7 +20,7 @@ export default function RenameChannelModal({ onClose, channel }) {
   });
 
   const schema = yup.object().shape({
-    name: yup.string().trim().min(3).max(20).required(t('channels.validation.required')),
+    name: yup.string().trim().min(3, t('channels.validation.length')).max(20, t('channels.validation.length')).required(t('channels.validation.required')),
   });
 
   useEffect(() => {

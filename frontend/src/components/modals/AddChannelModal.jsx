@@ -24,7 +24,7 @@ export default function AddChannelModal({ onClose }) {
     });
 
     const schema = yup.object().shape({
-      name: yup.string().trim().min(3, t('channels.validation.minLength')).max(20, t('channels.validation.maxLength')).required(t('channels.validation.required')),
+      name: yup.string().trim().min(3, t('channels.validation.length')).max(20, t('channels.validation.length')).required(t('channels.validation.required')),
     });
 
     useEffect(() => {

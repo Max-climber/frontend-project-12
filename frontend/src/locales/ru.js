@@ -44,6 +44,7 @@ export default {
       validation: {
         minLength: 'Минимум 3 символа',
         maxLength: 'Максимум 20 символов',
+        length: 'От 3 до 20 символов',
         required: 'Обязательное поле',
         duplicate: 'Канал с таким именем уже существует',
       },
