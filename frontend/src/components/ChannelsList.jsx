@@ -7,7 +7,7 @@ import ChannelItem from './ChannelItem'
 
 export default function ChannelsList({ openModal }) {
   const { t } = useTranslation()
-  const channels = useSelector(state => {
+  const channels = useSelector((state) => {
     try {
       return channelsSelectors.selectAll(state) || []
     } catch (error) {
@@ -15,7 +15,7 @@ export default function ChannelsList({ openModal }) {
       return []
     }
   })
-  const currentChannelId = useSelector(state => state.channels?.currentChannelId)
+  const currentChannelId = useSelector((state) => state.channels?.currentChannelId)
 
   return (
     <div className="col-4 col-md-2 border-end px-0 bg-light flex-column h-100 d-flex">
@@ -29,7 +29,7 @@ export default function ChannelsList({ openModal }) {
       </div>
       <ul className="nav flex-column nav-pills nav-fill px-2 mb-3 overflow-auto h-100 d-block">
         {channels.length > 0
-          ? channels.map(channel => (
+          ? channels.map((channel) => (
             <ChannelItem
               key={channel.id}
               channel={channel}

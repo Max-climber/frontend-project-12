@@ -13,7 +13,7 @@ export default function AddChannelModal({ onClose }) {
   const { t } = useTranslation()
   const dispatch = useDispatch()
   const inputRef = useRef(null)
-  const channels = useSelector(state => {
+  const channels = useSelector((state) => {
     try {
       return channelsSelectors.selectAll(state) || []
     } catch (error) {
@@ -50,7 +50,7 @@ export default function AddChannelModal({ onClose }) {
             const filteredName = filterProfanity(name)
 
             // Проверка на дубликат
-            if (channels.some(channel => channel.name === filteredName)) {
+            if (channels.some((channel) => channel.name === filteredName)) {
               setFieldError('name', t('channels.validation.duplicate'))
               setSubmitting(false)
               return

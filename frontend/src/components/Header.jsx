@@ -7,7 +7,7 @@ export default function Header() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const dispatch = useDispatch()
-  const username = useSelector(state => state.user?.username)
+  const username = useSelector((state) => state.user?.username)
   const token = localStorage.getItem('token')
 
   const handleLogout = () => {

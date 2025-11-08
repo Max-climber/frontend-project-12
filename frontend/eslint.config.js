@@ -34,7 +34,7 @@ export default defineConfig([
       '@stylistic/no-trailing-spaces': 'error',
       '@stylistic/no-multiple-empty-lines': ['error', { max: 1, maxEOF: 0 }],
       '@stylistic/brace-style': ['error', '1tbs', { allowSingleLine: false }],
-      '@stylistic/arrow-parens': ['error', 'as-needed'],
+      '@stylistic/arrow-parens': ['error', 'always'],
       '@stylistic/jsx-one-expression-per-line': ['error', { allow: 'literal' }],
       '@stylistic/multiline-ternary': ['error', 'always-multiline'],
       '@stylistic/no-multi-spaces': 'error',
