@@ -1,20 +1,20 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
-import { useTranslation } from 'react-i18next';
-import { clearUser } from '../features/users/userSlice';
+import { Link, useNavigate } from 'react-router-dom'
+import { useSelector, useDispatch } from 'react-redux'
+import { useTranslation } from 'react-i18next'
+import { clearUser } from '../features/users/userSlice'
 
 export default function Header() {
-  const { t } = useTranslation();
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const username = useSelector((state) => state.user?.username);
-  const token = localStorage.getItem('token');
+  const { t } = useTranslation()
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+  const username = useSelector(state => state.user?.username)
+  const token = localStorage.getItem('token')
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    dispatch(clearUser());
-    navigate('/login');
-  };
+    localStorage.removeItem('token')
+    dispatch(clearUser())
+    navigate('/login')
+  }
 
   // Убрали тестовую функцию Rollbar, чтобы не мешать автоматическим тестам
 
@@ -37,6 +37,5 @@ export default function Header() {
         </div>
       </div>
     </nav>
-  );
+  )
 }
-

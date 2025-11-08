@@ -1,22 +1,21 @@
 //  отображает список каналов и меню
 
-import { useSelector } from 'react-redux';
-import { useTranslation } from 'react-i18next';
-import { channelsSelectors } from '../features/channels/channelsSlice';
-import ChannelItem from './ChannelItem';
+import { useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
+import { channelsSelectors } from '../features/channels/channelsSlice'
+import ChannelItem from './ChannelItem'
 
 export default function ChannelsList({ openModal }) {
-  const { t } = useTranslation();
-  const channels = useSelector((state) => {
+  const { t } = useTranslation()
+  const channels = useSelector(state => {
     try {
-      return channelsSelectors.selectAll(state) || [];
+      return channelsSelectors.selectAll(state) || []
     } catch (error) {
-      console.error('Ошибка при получении каналов:', error);
-      return [];
+      console.error('Ошибка при получении каналов:', error)
+      return []
     }
-  });
-  const currentChannelId = useSelector((state) => state.channels?.currentChannelId);
-
+  })
+  const currentChannelId = useSelector(state => state.channels?.currentChannelId)
 
   return (
     <div className="col-4 col-md-2 border-end px-0 bg-light flex-column h-100 d-flex">
@@ -27,15 +26,17 @@ export default function ChannelsList({ openModal }) {
         </button>
       </div>
       <ul className="nav flex-column nav-pills nav-fill px-2 mb-3 overflow-auto h-100 d-block">
-        {channels.length > 0 ? channels.map((channel) => (
-          <ChannelItem
-            key={channel.id}
-            channel={channel}
-            currentChannelId={currentChannelId}
-            openModal={openModal}
-          />
-        ))  : <p className="text-center text-muted">{t('channels.noChannels')}</p>}
+        {channels.length > 0
+          ? channels.map(channel => (
+            <ChannelItem
+              key={channel.id}
+              channel={channel}
+              currentChannelId={currentChannelId}
+              openModal={openModal}
+            />
+          ))
+          : <p className="text-center text-muted">{t('channels.noChannels')}</p>}
       </ul>
     </div>
-  );
+  )
 }
