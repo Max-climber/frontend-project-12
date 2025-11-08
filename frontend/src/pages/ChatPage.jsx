@@ -87,44 +87,6 @@ const ChatPage = () => {
           }
           isInitialized.current = true;
         }
-
-        // Создаем socket после успешной загрузки данных
-        // Это гарантирует, что socket создается только после авторизации
-        if (!socketRef.current) {
-          const socket = initSocket();
-          socketRef.current = socket;
-
-          // Обработка подключения socket
-          socket.on('connect', () => {
-            console.log('Сокет подключен');
-          });
-
-          socket.on('connect_error', (err) => {
-            console.error('Ошибка подключения к сокету:', err);
-          });
-
-          // Подписка на socket события
-          socket.on('newMessage', (message) => {
-            dispatch(addMessage(message));
-          });
-
-          socket.on('newChannel', (channel) => {
-            dispatch(addChannel(channel));
-          });
-
-          socket.on('removeChannel', (data) => {
-            dispatch(removeChannel(data.id));
-            dispatch(removeMessagesByChannelsId(data.id));
-            const currentId = store.getState()?.channels?.currentChannelId;
-            if (currentId === data.id) {
-              dispatch(setCurrentChannelId(1));
-            }
-          });
-
-          socket.on('renameChannel', (data) => {
-            dispatch(renameChannel({ id: data.id, changes: { name: data.name } }));
-          });
-        }
       } catch (e) {
         console.error('Ошибка при получении данных:', e);
         // Отправляем ошибку в Rollbar
@@ -156,8 +118,53 @@ const ChatPage = () => {
     fetchData();
   }, [dispatch, navigate, t, rollbar]);
 
-  // Эффект для очистки socket при размонтировании компонента
+  // Эффект для создания socket и подписки на события
+  // Создаем socket только один раз при монтировании компонента
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return;
+    }
+
+    // Создаем socket только если его еще нет
+    if (socketRef.current) {
+      return;
+    }
+
+    const socket = initSocket();
+    socketRef.current = socket;
+
+    // Обработка подключения socket
+    socket.on('connect', () => {
+      console.log('Сокет подключен');
+    });
+
+    socket.on('connect_error', (err) => {
+      console.error('Ошибка подключения к сокету:', err);
+    });
+
+    // Подписка на socket события
+    socket.on('newMessage', (message) => {
+      dispatch(addMessage(message));
+    });
+
+    socket.on('newChannel', (channel) => {
+      dispatch(addChannel(channel));
+    });
+
+    socket.on('removeChannel', (data) => {
+      dispatch(removeChannel(data.id));
+      dispatch(removeMessagesByChannelsId(data.id));
+      const currentId = store.getState()?.channels?.currentChannelId;
+      if (currentId === data.id) {
+        dispatch(setCurrentChannelId(1));
+      }
+    });
+
+    socket.on('renameChannel', (data) => {
+      dispatch(renameChannel({ id: data.id, changes: { name: data.name } }));
+    });
+
     return () => {
       // Отписываемся от всех событий и закрываем соединение при размонтировании
       if (socketRef.current) {
@@ -172,7 +179,7 @@ const ChatPage = () => {
         socketRef.current = null;
       }
     };
-  }, []);
+  }, [dispatch]);
 
   return (
     <>
