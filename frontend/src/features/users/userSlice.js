@@ -12,7 +12,7 @@ const userSlice = createSlice({
       state.username = action.payload
     },
     clearUser: (state) => {
-      state.username = null;
+      state.username = null
     },
   },
 })

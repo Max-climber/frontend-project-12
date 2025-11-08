@@ -75,4 +75,4 @@ export default {
       dataLoadError: 'Ошибка при загрузке данных',
     },
   },
-};
+}

@@ -1,186 +1,186 @@
-import { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { useTranslation } from 'react-i18next';
-import { toast } from 'react-toastify';
-import { useRollbar } from '@rollbar/react';
-import { setChannels, setCurrentChannelId, addChannel, removeChannel, renameChannel } from '../features/channels/channelsSlice';
-import { setMessages, addMessage, removeMessagesByChannelsId } from '../features/messages/messagesSlice';
-import ChannelsList from '../components/ChannelsList';
-import MessagesBox from '../components/MessagesBox';
-import MessageForm from '../components/MessageForm';
-import AddChannelModal from '../components/modals/AddChannelModal';
-import RemoveChannelModal from '../components/modals/removeChannelModal';
-import RenameChannelModal from '../components/modals/renameChannelModal';
-import axios from 'axios';
-import initSocket from '../socket';
-import store from '../app/store';
+import { useEffect, useState, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
+import { toast } from 'react-toastify'
+import { useRollbar } from '@rollbar/react'
+import { setChannels, setCurrentChannelId, addChannel, removeChannel, renameChannel } from '../features/channels/channelsSlice'
+import { setMessages, addMessage, removeMessagesByChannelsId } from '../features/messages/messagesSlice'
+import ChannelsList from '../components/ChannelsList'
+import MessagesBox from '../components/MessagesBox'
+import MessageForm from '../components/MessageForm'
+import AddChannelModal from '../components/modals/AddChannelModal'
+import RemoveChannelModal from '../components/modals/removeChannelModal'
+import RenameChannelModal from '../components/modals/renameChannelModal'
+import axios from 'axios'
+import initSocket from '../socket'
+import store from '../app/store'
 
 const ChatPage = () => {
-  const { t } = useTranslation();
-  const rollbar = useRollbar();
-  const [modalType, setModalType] = useState(null);
-  const [modalChannel, setModalChannel] = useState(null);
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const currentChannelId = useSelector((state) => state.channels?.currentChannelId);
-  const isInitialized = useRef(false);
-  const socketRef = useRef(null);
+  const { t } = useTranslation()
+  const rollbar = useRollbar()
+  const [modalType, setModalType] = useState(null)
+  const [modalChannel, setModalChannel] = useState(null)
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+  const currentChannelId = useSelector(state => state.channels?.currentChannelId)
+  const isInitialized = useRef(false)
+  const socketRef = useRef(null)
 
   const openModal = (type, channel = null) => {
-    setModalType(type);
-    setModalChannel(channel);
-  };
+    setModalType(type)
+    setModalChannel(channel)
+  }
 
   const closeModal = () => {
-    setModalType(null);
-    setModalChannel(null);
-  };
+    setModalType(null)
+    setModalChannel(null)
+  }
 
   // Эффект для начальной загрузки данных (выполняется только один раз)
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token')
     if (!token) {
-      navigate('/login');
-      return;
+      navigate('/login')
+      return
     }
 
     const fetchData = async () => {
       // Получаем каналы и сообщения отдельно
       // В dev-режиме proxy переписывает /api на /api/v1
       // В prod используем прямой путь /api/v1
-      const channelsPath = import.meta.env.PROD ? '/api/v1/channels' : '/api/channels';
-      const messagesPath = import.meta.env.PROD ? '/api/v1/messages' : '/api/messages';
-      
+      const channelsPath = import.meta.env.PROD ? '/api/v1/channels' : '/api/channels'
+      const messagesPath = import.meta.env.PROD ? '/api/v1/messages' : '/api/messages'
+
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('token')
         const headers = {
           Authorization: `Bearer ${token}`,
-        };
-        
+        }
+
         const [channelsResponse, messagesResponse] = await Promise.all([
           axios.get(channelsPath, { headers }),
           axios.get(messagesPath, { headers }),
-        ]);
+        ])
 
-        const channels = channelsResponse.data;
-        const messages = messagesResponse.data;
+        const channels = channelsResponse.data
+        const messages = messagesResponse.data
 
         // Проверяем, что получили массивы
         if (!Array.isArray(channels) || !Array.isArray(messages)) {
-          console.error('Неверный формат данных от сервера. Возможно, сервер API не запущен или неправильно настроен.');
-          console.error('Channels:', channels);
-          console.error('Messages:', messages);
-          toast.error(t('toast.dataLoadError'));
-          return;
+          console.error('Неверный формат данных от сервера. Возможно, сервер API не запущен или неправильно настроен.')
+          console.error('Channels:', channels)
+          console.error('Messages:', messages)
+          toast.error(t('toast.dataLoadError'))
+          return
         }
 
-        dispatch(setChannels(channels));
-        dispatch(setMessages(messages));
+        dispatch(setChannels(channels))
+        dispatch(setMessages(messages))
 
         // Устанавливаем дефолтный канал только при первой загрузке
         // Это предотвращает перезапись выбранного канала при повторной загрузке
         if (!isInitialized.current) {
-          const defaultChannel = channels.find(ch => ch.name === 'general') || channels[0];
+          const defaultChannel = channels.find(ch => ch.name === 'general') || channels[0]
           if (defaultChannel) {
-            dispatch(setCurrentChannelId(defaultChannel.id));
+            dispatch(setCurrentChannelId(defaultChannel.id))
           }
-          isInitialized.current = true;
+          isInitialized.current = true
         }
       } catch (e) {
-        console.error('Ошибка при получении данных:', e);
+        console.error('Ошибка при получении данных:', e)
         // Отправляем ошибку в Rollbar
         rollbar.error('Ошибка при загрузке данных', e, {
           context: 'ChatPage.fetchData',
           channelsPath,
           messagesPath,
-        });
-        
+        })
+
         if (e.response) {
-          console.error('Статус ответа:', e.response.status);
-          console.error('Данные ответа:', e.response.data);
+          console.error('Статус ответа:', e.response.status)
+          console.error('Данные ответа:', e.response.data)
           // Если получили HTML вместо JSON, значит API сервер не запущен
           if (typeof e.response.data === 'string' && e.response.data.includes('<!doctype html>')) {
-            console.error('API сервер не запущен или недоступен.');
-            toast.error(t('toast.dataLoadError'));
+            console.error('API сервер не запущен или недоступен.')
+            toast.error(t('toast.dataLoadError'))
           } else {
-            toast.error(t('toast.dataLoadError'));
+            toast.error(t('toast.dataLoadError'))
           }
         } else if (e.code === 'ERR_NETWORK' || e.message?.includes('Network Error')) {
-          console.error('Ошибка сети: API сервер недоступен.');
-          toast.error(t('toast.networkError'));
+          console.error('Ошибка сети: API сервер недоступен.')
+          toast.error(t('toast.networkError'))
         } else {
-          toast.error(t('toast.dataLoadError'));
+          toast.error(t('toast.dataLoadError'))
         }
       }
-    };
+    }
 
-    fetchData();
-  }, [dispatch, navigate, t, rollbar]);
+    fetchData()
+  }, [dispatch, navigate, t, rollbar])
 
   // Эффект для создания socket и подписки на события
   // Создаем socket только один раз при монтировании компонента
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token')
     if (!token) {
-      return;
+      return
     }
 
     // Создаем socket только если его еще нет
     if (socketRef.current) {
-      return;
+      return
     }
 
-    const socket = initSocket();
-    socketRef.current = socket;
+    const socket = initSocket()
+    socketRef.current = socket
 
     // Обработка подключения socket
     socket.on('connect', () => {
-      console.log('Сокет подключен');
-    });
+      console.log('Сокет подключен')
+    })
 
-    socket.on('connect_error', (err) => {
-      console.error('Ошибка подключения к сокету:', err);
-    });
+    socket.on('connect_error', err => {
+      console.error('Ошибка подключения к сокету:', err)
+    })
 
     // Подписка на socket события
-    socket.on('newMessage', (message) => {
-      console.log('Получено новое сообщение через socket:', message);
-      dispatch(addMessage(message));
-    });
+    socket.on('newMessage', message => {
+      console.log('Получено новое сообщение через socket:', message)
+      dispatch(addMessage(message))
+    })
 
-    socket.on('newChannel', (channel) => {
-      dispatch(addChannel(channel));
-    });
+    socket.on('newChannel', channel => {
+      dispatch(addChannel(channel))
+    })
 
-    socket.on('removeChannel', (data) => {
-      dispatch(removeChannel(data.id));
-      dispatch(removeMessagesByChannelsId(data.id));
-      const currentId = store.getState()?.channels?.currentChannelId;
+    socket.on('removeChannel', data => {
+      dispatch(removeChannel(data.id))
+      dispatch(removeMessagesByChannelsId(data.id))
+      const currentId = store.getState()?.channels?.currentChannelId
       if (currentId === data.id) {
-        dispatch(setCurrentChannelId(1));
+        dispatch(setCurrentChannelId(1))
       }
-    });
+    })
 
-    socket.on('renameChannel', (data) => {
-      dispatch(renameChannel({ id: data.id, changes: { name: data.name } }));
-    });
+    socket.on('renameChannel', data => {
+      dispatch(renameChannel({ id: data.id, changes: { name: data.name } }))
+    })
 
     return () => {
       // Отписываемся от всех событий и закрываем соединение при размонтировании
       if (socketRef.current) {
-        const socket = socketRef.current;
-        socket.off('connect');
-        socket.off('connect_error');
-        socket.off('newMessage');
-        socket.off('newChannel');
-        socket.off('removeChannel');
-        socket.off('renameChannel');
-        socket.disconnect();
-        socketRef.current = null;
+        const socket = socketRef.current
+        socket.off('connect')
+        socket.off('connect_error')
+        socket.off('newMessage')
+        socket.off('newChannel')
+        socket.off('removeChannel')
+        socket.off('renameChannel')
+        socket.disconnect()
+        socketRef.current = null
       }
-    };
-  }, [dispatch]);
+    }
+  }, [dispatch])
 
   return (
     <>
@@ -196,8 +196,8 @@ const ChatPage = () => {
       {modalType === 'add' && (
         <>
           <div className="modal-backdrop show" style={{ zIndex: 1040 }}></div>
-          <div className="modal show" style={{ display: 'block', position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1050 }} tabIndex="-1" role="dialog" onClick={(e) => e.target === e.currentTarget && closeModal()}>
-            <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
+          <div className="modal show" style={{ display: 'block', position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1050 }} tabIndex="-1" role="dialog" onClick={e => e.target === e.currentTarget && closeModal()}>
+            <div className="modal-dialog modal-dialog-centered" onClick={e => e.stopPropagation()}>
               <div className="modal-content">
                 <AddChannelModal onClose={closeModal} />
               </div>
@@ -208,8 +208,8 @@ const ChatPage = () => {
       {modalType === 'rename' && (
         <>
           <div className="modal-backdrop show" style={{ zIndex: 1040 }}></div>
-          <div className="modal show" style={{ display: 'block', position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1050 }} tabIndex="-1" role="dialog" onClick={(e) => e.target === e.currentTarget && closeModal()}>
-            <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
+          <div className="modal show" style={{ display: 'block', position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1050 }} tabIndex="-1" role="dialog" onClick={e => e.target === e.currentTarget && closeModal()}>
+            <div className="modal-dialog modal-dialog-centered" onClick={e => e.stopPropagation()}>
               <div className="modal-content">
                 <RenameChannelModal onClose={closeModal} channel={modalChannel} />
               </div>
@@ -220,8 +220,8 @@ const ChatPage = () => {
       {modalType === 'remove' && (
         <>
           <div className="modal-backdrop show" style={{ zIndex: 1040 }}></div>
-          <div className="modal show" style={{ display: 'block', position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1050 }} tabIndex="-1" role="dialog" onClick={(e) => e.target === e.currentTarget && closeModal()}>
-            <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
+          <div className="modal show" style={{ display: 'block', position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1050 }} tabIndex="-1" role="dialog" onClick={e => e.target === e.currentTarget && closeModal()}>
+            <div className="modal-dialog modal-dialog-centered" onClick={e => e.stopPropagation()}>
               <div className="modal-content">
                 <RemoveChannelModal onClose={closeModal} channel={modalChannel} />
               </div>
@@ -230,7 +230,7 @@ const ChatPage = () => {
         </>
       )}
     </>
-  );
-};
+  )
+}
 
-export default ChatPage;
+export default ChatPage

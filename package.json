@@ -18,7 +18,11 @@
     "@hexlet/chat-server": "^2.0.4"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.1",
     "@playwright/test": "^1.56.1",
-    "@types/node": "^24.10.0"
+    "@types/node": "^24.10.0",
+    "eslint": "^8.57.1",
+    "eslint-plugin-react": "^7.37.5",
+    "globals": "^16.5.0"
   }
 }

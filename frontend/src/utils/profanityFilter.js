@@ -1,14 +1,14 @@
-import filter from 'leo-profanity';
+import filter from 'leo-profanity'
 
 // По умолчанию leo-profanity использует английский словарь
 // Сохраняем английские слова перед загрузкой русского словаря
-const englishWords = filter.list();
+const englishWords = filter.list()
 
 // Загружаем русский словарь (заменяет английский)
-filter.loadDictionary('ru');
+filter.loadDictionary('ru')
 
 // Объединяем оба словаря: добавляем английские слова к русскому словарю
-filter.add(englishWords);
+filter.add(englishWords)
 
 /**
  * Фильтрует нецензурные слова в тексте, заменяя их на звездочки
@@ -18,10 +18,9 @@ filter.add(englishWords);
  */
 export const filterProfanity = (text) => {
   if (!text || typeof text !== 'string') {
-    return text;
+    return text
   }
-  return filter.clean(text);
-};
+  return filter.clean(text)
+}
 
-export default filterProfanity;
-
+export default filterProfanity
