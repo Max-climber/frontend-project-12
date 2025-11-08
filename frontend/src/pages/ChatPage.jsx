@@ -23,7 +23,7 @@ const ChatPage = () => {
   const [modalChannel, setModalChannel] = useState(null)
   const navigate = useNavigate()
   const dispatch = useDispatch()
-  const currentChannelId = useSelector((state) => state.channels?.currentChannelId)
+  const currentChannelId = useSelector(state => state.channels?.currentChannelId)
   const isInitialized = useRef(false)
   const socketRef = useRef(null)
 
@@ -81,7 +81,7 @@ const ChatPage = () => {
         // Устанавливаем дефолтный канал только при первой загрузке
         // Это предотвращает перезапись выбранного канала при повторной загрузке
         if (!isInitialized.current) {
-          const defaultChannel = channels.find((ch) => ch.name === 'general') || channels[0]
+          const defaultChannel = channels.find(ch => ch.name === 'general') || channels[0]
           if (defaultChannel) {
             dispatch(setCurrentChannelId(defaultChannel.id))
           }
@@ -139,21 +139,21 @@ const ChatPage = () => {
       console.log('Сокет подключен')
     })
 
-    socket.on('connect_error', (err) => {
+    socket.on('connect_error', err => {
       console.error('Ошибка подключения к сокету:', err)
     })
 
     // Подписка на socket события
-    socket.on('newMessage', (message) => {
+    socket.on('newMessage', message => {
       console.log('Получено новое сообщение через socket:', message)
       dispatch(addMessage(message))
     })
 
-    socket.on('newChannel', (channel) => {
+    socket.on('newChannel', channel => {
       dispatch(addChannel(channel))
     })
 
-    socket.on('removeChannel', (data) => {
+    socket.on('removeChannel', data => {
       dispatch(removeChannel(data.id))
       dispatch(removeMessagesByChannelsId(data.id))
       const currentId = store.getState()?.channels?.currentChannelId
@@ -162,7 +162,7 @@ const ChatPage = () => {
       }
     })
 
-    socket.on('renameChannel', (data) => {
+    socket.on('renameChannel', data => {
       dispatch(renameChannel({ id: data.id, changes: { name: data.name } }))
     })
 
@@ -196,8 +196,8 @@ const ChatPage = () => {
       {modalType === 'add' && (
         <>
           <div className="modal-backdrop show" style={{ zIndex: 1040 }}></div>
-          <div className="modal show" style={{ display: 'block', position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1050 }} tabIndex="-1" role="dialog" onClick={(e) => e.target === e.currentTarget && closeModal()}>
-            <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
+          <div className="modal show" style={{ display: 'block', position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1050 }} tabIndex="-1" role="dialog" onClick={e => e.target === e.currentTarget && closeModal()}>
+            <div className="modal-dialog modal-dialog-centered" onClick={e => e.stopPropagation()}>
               <div className="modal-content">
                 <AddChannelModal onClose={closeModal} />
               </div>
@@ -208,8 +208,8 @@ const ChatPage = () => {
       {modalType === 'rename' && (
         <>
           <div className="modal-backdrop show" style={{ zIndex: 1040 }}></div>
-          <div className="modal show" style={{ display: 'block', position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1050 }} tabIndex="-1" role="dialog" onClick={(e) => e.target === e.currentTarget && closeModal()}>
-            <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
+          <div className="modal show" style={{ display: 'block', position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1050 }} tabIndex="-1" role="dialog" onClick={e => e.target === e.currentTarget && closeModal()}>
+            <div className="modal-dialog modal-dialog-centered" onClick={e => e.stopPropagation()}>
               <div className="modal-content">
                 <RenameChannelModal onClose={closeModal} channel={modalChannel} />
               </div>
@@ -220,8 +220,8 @@ const ChatPage = () => {
       {modalType === 'remove' && (
         <>
           <div className="modal-backdrop show" style={{ zIndex: 1040 }}></div>
-          <div className="modal show" style={{ display: 'block', position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1050 }} tabIndex="-1" role="dialog" onClick={(e) => e.target === e.currentTarget && closeModal()}>
-            <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
+          <div className="modal show" style={{ display: 'block', position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1050 }} tabIndex="-1" role="dialog" onClick={e => e.target === e.currentTarget && closeModal()}>
+            <div className="modal-dialog modal-dialog-centered" onClick={e => e.stopPropagation()}>
               <div className="modal-content">
                 <RemoveChannelModal onClose={closeModal} channel={modalChannel} />
               </div>

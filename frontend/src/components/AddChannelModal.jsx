@@ -10,7 +10,7 @@ const schema = yup.object().shape({
 
 export default function AddChannelModal({ show, handleClose }) {
   const dispatch = useDispatch()
-  const channels = useSelector((state) => {
+  const channels = useSelector(state => {
     try {
       return channelsSelectors.selectAll(state) || []
     } catch (error) {
@@ -22,7 +22,7 @@ export default function AddChannelModal({ show, handleClose }) {
   const handleSubmit = async (values, { setSubmitting, setFieldError }) => {
     const name = values.name.trim()
 
-    if (channels.some((ch) => ch.name === name)) {
+    if (channels.some(ch => ch.name === name)) {
       setFieldError('name', 'Канал с таким именем уже существует')
       setSubmitting(false)
       return

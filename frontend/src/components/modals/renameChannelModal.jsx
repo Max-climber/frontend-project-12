@@ -10,7 +10,7 @@ import axios from 'axios'
 export default function RenameChannelModal({ onClose, channel }) {
   const { t } = useTranslation()
   const inputRef = useRef(null)
-  const channels = useSelector((state) => {
+  const channels = useSelector(state => {
     try {
       return channelsSelectors.selectAll(state) || []
     } catch (error) {
@@ -46,7 +46,7 @@ export default function RenameChannelModal({ onClose, channel }) {
             const name = values.name.trim()
 
             // Проверка на дубликат (исключая текущий канал)
-            if (channels.some((ch) => ch.name === name && ch.id !== channel.id)) {
+            if (channels.some(ch => ch.name === name && ch.id !== channel.id)) {
               setFieldError('name', t('channels.validation.duplicate'))
               setSubmitting(false)
               return

@@ -46,7 +46,7 @@ export const LoginPage = () => {
                     }
                   }}
                 >
-                  {(formik) => {
+                  {formik => {
                     const { status, isSubmitting } = formik
                     return (
                       <Form>

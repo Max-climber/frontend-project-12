@@ -5,10 +5,10 @@ import { filterProfanity } from '../utils/profanityFilter'
 
 export default function MessageForm() {
   const { t } = useTranslation()
-  const currentChannelId = useSelector((state) => state.channels?.currentChannelId)
-  const username = useSelector((state) => state.user.username)
+  const currentChannelId = useSelector(state => state.channels?.currentChannelId)
+  const username = useSelector(state => state.user.username)
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault()
     const text = e.target.elements.message.value.trim()
     if (!text || !currentChannelId) return

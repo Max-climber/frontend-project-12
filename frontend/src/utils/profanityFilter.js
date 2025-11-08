@@ -16,7 +16,7 @@ filter.add(englishWords)
  * @param {string} text - Текст для фильтрации
  * @returns {string} - Отфильтрованный текст
  */
-export const filterProfanity = (text) => {
+export const filterProfanity = text => {
   if (!text || typeof text !== 'string') {
     return text
   }

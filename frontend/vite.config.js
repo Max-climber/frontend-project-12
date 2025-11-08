@@ -14,7 +14,7 @@ export default defineConfig({
     proxy: {
       '/api': {
         target: 'http://localhost:5001',
-        rewrite: (path) => path.replace(/^\/api/, '/api/v1'),
+        rewrite: path => path.replace(/^\/api/, '/api/v1'),
       },
       '/socket.io': {
         target: 'ws://localhost:5001',
