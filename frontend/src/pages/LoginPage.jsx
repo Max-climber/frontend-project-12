@@ -1,5 +1,5 @@
 // для пути /login
-import { Formik, Form, Field, ErrorMessage } from 'formik'
+import { Formik, Form, Field } from 'formik'
 import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
@@ -19,7 +19,9 @@ export const LoginPage = () => {
           <div className="card shadow-sm">
             <div className="card-body p-5">
               <div className="w-100">
-                <h2 className="text-center mb-4">{t('loginPage.title')}</h2>
+                <h2 className="text-center mb-4">
+                  {t('loginPage.title')}
+                </h2>
                 <Formik
                   initialValues={{
                     username: '',
@@ -49,7 +51,9 @@ export const LoginPage = () => {
                     return (
                       <Form>
                         <div className="mb-3">
-                          <label htmlFor="username" className="form-label">{t('loginPage.username')}</label>
+                          <label htmlFor="username" className="form-label">
+                            {t('loginPage.username')}
+                          </label>
                           <Field
                             id="username"
                             type="text"
@@ -59,7 +63,9 @@ export const LoginPage = () => {
                           />
                         </div>
                         <div className="mb-3">
-                          <label htmlFor="password" className="form-label">{t('loginPage.password')}</label>
+                          <label htmlFor="password" className="form-label">
+                            {t('loginPage.password')}
+                          </label>
                           <Field
                             id="password"
                             type="password"
@@ -68,13 +74,22 @@ export const LoginPage = () => {
                             autoComplete="current-password"
                           />
                         </div>
-                        {status && <div className="text-danger mb-3">{status}</div>}
+                        {status && (
+                          <div className="text-danger mb-3">
+                            {status}
+                          </div>
+                        )}
                         <button type="submit" className="btn btn-primary w-100 mb-3" disabled={isSubmitting}>
                           {t('loginPage.login')}
                         </button>
                         <div className="text-center">
-                          <span>{t('loginPage.noAccount')} </span>
-                          <Link to="/signup">{t('loginPage.signup')}</Link>
+                          <span>
+                            {t('loginPage.noAccount')}
+                            {' '}
+                          </span>
+                          <Link to="/signup">
+                            {t('loginPage.signup')}
+                          </Link>
                         </div>
                       </Form>
                     )

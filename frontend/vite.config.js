@@ -1,5 +1,5 @@
-import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [react()],
@@ -14,7 +14,7 @@ export default defineConfig({
     proxy: {
       '/api': {
         target: 'http://localhost:5001',
-        rewrite: (path) => path.replace(/^\/api/, '/api/v1'),
+        rewrite: path => path.replace(/^\/api/, '/api/v1'),
       },
       '/socket.io': {
         target: 'ws://localhost:5001',
@@ -23,4 +23,4 @@ export default defineConfig({
       },
     },
   },
-});
+})

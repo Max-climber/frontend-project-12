@@ -34,11 +34,15 @@ export default function RemoveChannelModal({ onClose, channel }) {
   return (
     <>
       <div className="modal-header">
-        <h5 className="modal-title">{t('channels.remove')}</h5>
+        <h5 className="modal-title">
+          {t('channels.remove')}
+        </h5>
         <button type="button" className="btn-close" onClick={onClose}></button>
       </div>
       <div className="modal-body">
-        <p>{t('channels.removeConfirm', { name: channel.name })}</p>
+        <p>
+          {t('channels.removeConfirm', { name: channel.name })}
+        </p>
       </div>
       <div className="modal-footer">
         <button type="button" className="btn btn-secondary" onClick={onClose}>

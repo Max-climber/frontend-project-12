@@ -35,7 +35,9 @@ export default function AddChannelModal({ onClose }) {
   return (
     <>
       <div className="modal-header">
-        <h5 className="modal-title">{t('channels.add')}</h5>
+        <h5 className="modal-title">
+          {t('channels.add')}
+        </h5>
         <button type="button" className="btn-close" onClick={onClose}></button>
       </div>
       <div className="modal-body">
@@ -79,7 +81,9 @@ export default function AddChannelModal({ onClose }) {
           {({ isSubmitting }) => (
             <Form>
               <div className="mb-3">
-                <label htmlFor="name" className="form-label">{t('channels.name')}</label>
+                <label htmlFor="name" className="form-label">
+                  {t('channels.name')}
+                </label>
                 <Field
                   id="name"
                   name="name"

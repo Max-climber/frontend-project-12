@@ -37,11 +37,27 @@ export default function ChannelItem({ channel, currentChannelId, openModal }) {
           className="btn dropdown-toggle dropdown-toggle-split"
           data-bs-toggle="dropdown"
         >
-          <span className="visually-hidden">{t('channels.manage')}</span>
+          <span className="visually-hidden">
+            {t('channels.manage')}
+          </span>
         </button>
         <ul className="dropdown-menu">
-          <li><button className="dropdown-item" onClick={() => openModal('rename', channel)}>{t('channels.rename')}</button></li>
-          <li><button className="dropdown-item" onClick={() => openModal('remove', channel)}>{t('modals.remove')}</button></li>
+          <li>
+            <button
+              className="dropdown-item"
+              onClick={() => openModal('rename', channel)}
+            >
+              {t('channels.rename')}
+            </button>
+          </li>
+          <li>
+            <button
+              className="dropdown-item"
+              onClick={() => openModal('remove', channel)}
+            >
+              {t('modals.remove')}
+            </button>
+          </li>
         </ul>
       </div>
     </li>

@@ -59,7 +59,9 @@ export const SignupPage = () => {
           <div className="card shadow-sm">
             <div className="card-body p-5">
               <div className="w-100">
-                <h2 className="text-center mb-4">{t('signupPage.title')}</h2>
+                <h2 className="text-center mb-4">
+                  {t('signupPage.title')}
+                </h2>
                 <Formik
                   initialValues={{
                     username: '',
@@ -133,8 +135,13 @@ export const SignupPage = () => {
                         {t('signupPage.signup')}
                       </button>
                       <div className="text-center">
-                        <span>{t('signupPage.hasAccount')} </span>
-                        <Link to="/login">{t('signupPage.login')}</Link>
+                        <span>
+                          {t('signupPage.hasAccount')}
+                          {' '}
+                        </span>
+                        <Link to="/login">
+                          {t('signupPage.login')}
+                        </Link>
                       </div>
                     </Form>
                   )}
