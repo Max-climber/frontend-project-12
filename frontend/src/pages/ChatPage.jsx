@@ -120,10 +120,35 @@ const ChatPage = () => {
 
   // Эффект для создания socket и подписки на события
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      // Если нет токена, не создаем socket
+      return;
+    }
+
     // Создаем новый экземпляр socket при монтировании компонента
     // Это предотвращает хранение состояния между запусками приложения
-    const socket = initSocket();
+    // Передаем токен для авторизации socket соединения
+    const socket = initSocket(token);
+    if (!socket) {
+      console.error('Не удалось создать socket соединение');
+      return;
+    }
+    
     socketRef.current = socket;
+
+    // Обработка ошибок подключения
+    socket.on('connect_error', (error) => {
+      console.error('Ошибка подключения socket:', error);
+    });
+
+    socket.on('connect', () => {
+      console.log('Socket подключен:', socket.id);
+    });
+
+    socket.on('disconnect', (reason) => {
+      console.log('Socket отключен:', reason);
+    });
 
     // Подписка на socket события
     socket.on('newMessage', (message) => {
@@ -154,6 +179,9 @@ const ChatPage = () => {
 
     return () => {
       // Отписываемся от всех событий и закрываем соединение
+      socket.off('connect_error');
+      socket.off('connect');
+      socket.off('disconnect');
       socket.off('newMessage');
       socket.off('newChannel');
       socket.off('removeChannel');
@@ -161,8 +189,6 @@ const ChatPage = () => {
       socket.disconnect();
       socketRef.current = null;
     };
-    // Убираем currentChannelId из зависимостей, чтобы socket не пересоздавался при смене канала
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch]);
 
   return (
