@@ -9,14 +9,6 @@ export const initSocket = () => {
     transports: ['websocket'],
   });
 
-  socket.on('connect', () => {
-    console.log('Сокет подключен');
-  });
-
-  socket.on('connect_error', (err) => {
-    console.error('Ошибка подключения к сокету:', err);
-  });
-
   return socket;
 };
 

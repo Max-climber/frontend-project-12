@@ -125,6 +125,15 @@ const ChatPage = () => {
     const socket = initSocket();
     socketRef.current = socket;
 
+    // Обработка подключения socket
+    socket.on('connect', () => {
+      console.log('Сокет подключен');
+    });
+
+    socket.on('connect_error', (err) => {
+      console.error('Ошибка подключения к сокету:', err);
+    });
+
     // Подписка на socket события
     socket.on('newMessage', (message) => {
       dispatch(addMessage(message));
