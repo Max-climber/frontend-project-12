@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
+import { useRollbar } from '@rollbar/react';
 import { setChannels, setCurrentChannelId, addChannel, removeChannel, renameChannel } from '../features/channels/channelsSlice';
 import { setMessages, addMessage, removeMessagesByChannelsId } from '../features/messages/messagesSlice';
 import ChannelsList from '../components/ChannelsList';
@@ -16,6 +17,7 @@ import socket from '../socket';
 
 const ChatPage = () => {
   const { t } = useTranslation();
+  const rollbar = useRollbar();
   const [modalType, setModalType] = useState(null);
   const [modalChannel, setModalChannel] = useState(null);
   const navigate = useNavigate();
@@ -42,17 +44,17 @@ const ChatPage = () => {
     }
 
     const fetchData = async () => {
+      // Получаем каналы и сообщения отдельно
+      // В dev-режиме proxy переписывает /api на /api/v1
+      // В prod используем прямой путь /api/v1
+      const channelsPath = import.meta.env.PROD ? '/api/v1/channels' : '/api/channels';
+      const messagesPath = import.meta.env.PROD ? '/api/v1/messages' : '/api/messages';
+      
       try {
         const token = localStorage.getItem('token');
         const headers = {
           Authorization: `Bearer ${token}`,
         };
-
-        // Получаем каналы и сообщения отдельно
-        // В dev-режиме proxy переписывает /api на /api/v1
-        // В prod используем прямой путь /api/v1
-        const channelsPath = import.meta.env.PROD ? '/api/v1/channels' : '/api/channels';
-        const messagesPath = import.meta.env.PROD ? '/api/v1/messages' : '/api/messages';
         
         const [channelsResponse, messagesResponse] = await Promise.all([
           axios.get(channelsPath, { headers }),
@@ -85,6 +87,13 @@ const ChatPage = () => {
         }
       } catch (e) {
         console.error('Ошибка при получении данных:', e);
+        // Отправляем ошибку в Rollbar
+        rollbar.error('Ошибка при загрузке данных', e, {
+          context: 'ChatPage.fetchData',
+          channelsPath,
+          messagesPath,
+        });
+        
         if (e.response) {
           console.error('Статус ответа:', e.response.status);
           console.error('Данные ответа:', e.response.data);
@@ -105,7 +114,7 @@ const ChatPage = () => {
     };
 
     fetchData();
-  }, [dispatch, navigate, t]);
+  }, [dispatch, navigate, t, rollbar]);
 
   // Эффект для подписки на socket события
   useEffect(() => {
