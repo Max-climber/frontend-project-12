@@ -87,6 +87,44 @@ const ChatPage = () => {
           }
           isInitialized.current = true;
         }
+
+        // Создаем socket после успешной загрузки данных
+        // Это гарантирует, что socket создается только после авторизации
+        if (!socketRef.current) {
+          const socket = initSocket();
+          socketRef.current = socket;
+
+          // Обработка подключения socket
+          socket.on('connect', () => {
+            console.log('Сокет подключен');
+          });
+
+          socket.on('connect_error', (err) => {
+            console.error('Ошибка подключения к сокету:', err);
+          });
+
+          // Подписка на socket события
+          socket.on('newMessage', (message) => {
+            dispatch(addMessage(message));
+          });
+
+          socket.on('newChannel', (channel) => {
+            dispatch(addChannel(channel));
+          });
+
+          socket.on('removeChannel', (data) => {
+            dispatch(removeChannel(data.id));
+            dispatch(removeMessagesByChannelsId(data.id));
+            const currentId = store.getState()?.channels?.currentChannelId;
+            if (currentId === data.id) {
+              dispatch(setCurrentChannelId(1));
+            }
+          });
+
+          socket.on('renameChannel', (data) => {
+            dispatch(renameChannel({ id: data.id, changes: { name: data.name } }));
+          });
+        }
       } catch (e) {
         console.error('Ошибка при получении данных:', e);
         // Отправляем ошибку в Rollbar
@@ -118,61 +156,23 @@ const ChatPage = () => {
     fetchData();
   }, [dispatch, navigate, t, rollbar]);
 
-  // Эффект для создания socket и подписки на события
+  // Эффект для очистки socket при размонтировании компонента
   useEffect(() => {
-    // Создаем новый экземпляр socket при монтировании компонента
-    // Это предотвращает хранение состояния между запусками приложения
-    const socket = initSocket();
-    socketRef.current = socket;
-
-    // Обработка подключения socket
-    socket.on('connect', () => {
-      console.log('Сокет подключен');
-    });
-
-    socket.on('connect_error', (err) => {
-      console.error('Ошибка подключения к сокету:', err);
-    });
-
-    // Подписка на socket события
-    socket.on('newMessage', (message) => {
-      dispatch(addMessage(message));
-    });
-
-    socket.on('newChannel', (channel) => {
-      dispatch(addChannel(channel));
-      // Уведомление показывается в AddChannelModal после успешного API запроса
-    });
-
-    socket.on('removeChannel', (data) => {
-      dispatch(removeChannel(data.id));
-      dispatch(removeMessagesByChannelsId(data.id));
-      // Уведомление показывается в RemoveChannelModal после успешного API запроса
-      // Получаем текущее значение currentChannelId из store внутри обработчика
-      const currentId = store.getState()?.channels?.currentChannelId;
-      if (currentId === data.id) {
-        // Если удаленный канал был текущим, переключаемся на general или первый канал
-        dispatch(setCurrentChannelId(1));
-      }
-    });
-
-    socket.on('renameChannel', (data) => {
-      dispatch(renameChannel({ id: data.id, changes: { name: data.name } }));
-      // Уведомление показывается в RenameChannelModal после успешного API запроса
-    });
-
     return () => {
-      // Отписываемся от всех событий и закрываем соединение
-      socket.off('connect');
-      socket.off('connect_error');
-      socket.off('newMessage');
-      socket.off('newChannel');
-      socket.off('removeChannel');
-      socket.off('renameChannel');
-      socket.disconnect();
-      socketRef.current = null;
+      // Отписываемся от всех событий и закрываем соединение при размонтировании
+      if (socketRef.current) {
+        const socket = socketRef.current;
+        socket.off('connect');
+        socket.off('connect_error');
+        socket.off('newMessage');
+        socket.off('newChannel');
+        socket.off('removeChannel');
+        socket.off('renameChannel');
+        socket.disconnect();
+        socketRef.current = null;
+      }
     };
-  }, [dispatch]);
+  }, []);
 
   return (
     <>
