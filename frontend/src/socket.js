@@ -2,7 +2,7 @@ import { io } from 'socket.io-client';
 
 // Экспортируем функцию для создания нового экземпляра socket
 // Это предотвращает хранение состояния между запусками приложения
-// Создаем socket как в примере студента - просто io() с настройками
+
 export const initSocket = () => {
   const socket = io('/', {
     path: '/socket.io',
