@@ -19,7 +19,7 @@ const channelsSlice = createSlice({
 
 // Безопасный селектор для получения state.channels
 // Важно: проверяем, что state существует и имеет свойство channels
-const selectChannelsState = (state) => {
+const selectChannelsState = state => {
   if (!state || !state.channels) {
     return initialState
   }

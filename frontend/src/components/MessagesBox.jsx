@@ -11,7 +11,9 @@ export default function MessagesBox({ currentChannelId }) {
     <div className="chat-messages overflow-auto px-5">
       {messages.map(msg => (
         <div key={msg.id} className="text-break mb-2">
-          <b>{msg.username}</b>
+          <b>
+            {msg.username}
+          </b>
           :
           {' '}
           {msg.body}
