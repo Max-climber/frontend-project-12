@@ -13,10 +13,12 @@
   "license": "ISC",
   "author": "",
   "type": "commonjs",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "scripts": {},
   "dependencies": {
     "@hexlet/chat-server": "^2.0.4"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@types/node": "^24.10.0"
   }
 }

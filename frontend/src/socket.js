@@ -1,3 +1,7 @@
 import { io } from 'socket.io-client';
-const socket = io();
-export default socket;
+
+// Экспортируем функцию для создания нового экземпляра socket
+// Это предотвращает хранение состояния между запусками приложения
+export const initSocket = () => io();
+
+export default initSocket;

@@ -13,7 +13,7 @@ import AddChannelModal from '../components/modals/AddChannelModal';
 import RemoveChannelModal from '../components/modals/removeChannelModal';
 import RenameChannelModal from '../components/modals/renameChannelModal';
 import axios from 'axios';
-import socket from '../socket';
+import initSocket from '../socket';
 
 const ChatPage = () => {
   const { t } = useTranslation();
@@ -24,6 +24,7 @@ const ChatPage = () => {
   const dispatch = useDispatch();
   const currentChannelId = useSelector((state) => state.channels?.currentChannelId);
   const isInitialized = useRef(false);
+  const socketRef = useRef(null);
 
   const openModal = (type, channel = null) => {
     setModalType(type);
@@ -116,8 +117,13 @@ const ChatPage = () => {
     fetchData();
   }, [dispatch, navigate, t, rollbar]);
 
-  // Эффект для подписки на socket события
+  // Эффект для создания socket и подписки на события
   useEffect(() => {
+    // Создаем новый экземпляр socket при монтировании компонента
+    // Это предотвращает хранение состояния между запусками приложения
+    const socket = initSocket();
+    socketRef.current = socket;
+
     // Подписка на socket события
     socket.on('newMessage', (message) => {
       dispatch(addMessage(message));
@@ -146,10 +152,13 @@ const ChatPage = () => {
     });
 
     return () => {
+      // Отписываемся от всех событий и закрываем соединение
       socket.off('newMessage');
       socket.off('newChannel');
       socket.off('removeChannel');
       socket.off('renameChannel');
+      socket.disconnect();
+      socketRef.current = null;
     };
   }, [dispatch, currentChannelId, t]);
 
