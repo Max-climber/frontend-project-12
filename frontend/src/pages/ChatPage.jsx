@@ -14,6 +14,7 @@ import RemoveChannelModal from '../components/modals/removeChannelModal';
 import RenameChannelModal from '../components/modals/renameChannelModal';
 import axios from 'axios';
 import initSocket from '../socket';
+import store from '../app/store';
 
 const ChatPage = () => {
   const { t } = useTranslation();
@@ -138,8 +139,8 @@ const ChatPage = () => {
       dispatch(removeChannel(data.id));
       dispatch(removeMessagesByChannelsId(data.id));
       // Уведомление показывается в RemoveChannelModal после успешного API запроса
-      // Используем текущее значение currentChannelId из селектора
-      const currentId = currentChannelId;
+      // Получаем текущее значение currentChannelId из store внутри обработчика
+      const currentId = store.getState()?.channels?.currentChannelId;
       if (currentId === data.id) {
         // Если удаленный канал был текущим, переключаемся на general или первый канал
         dispatch(setCurrentChannelId(1));
@@ -160,7 +161,9 @@ const ChatPage = () => {
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [dispatch, currentChannelId, t]);
+    // Убираем currentChannelId из зависимостей, чтобы socket не пересоздавался при смене канала
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatch]);
 
   return (
     <>
