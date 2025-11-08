@@ -61,6 +61,7 @@ export default {
     messages: {
       placeholder: 'Введите сообщение...',
       send: 'Отправить',
+      newMessage: 'Новое сообщение',
     },
     notFound: {
       title: 'Пейдж нот фаунд, его украли инопланетяне!',

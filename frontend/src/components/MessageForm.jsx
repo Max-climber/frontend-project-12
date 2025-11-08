@@ -25,12 +25,13 @@ export default function MessageForm() {
       // Socket событие newMessage придет автоматически от сервера
       // и обработается в ChatPage, поэтому здесь не нужно обновлять store
       const apiPath = import.meta.env.PROD ? '/api/v1/messages' : '/api/messages';
-      await axios.post(apiPath, {
+      const response = await axios.post(apiPath, {
         body: filteredText,
         channelId: currentChannelId,
         username,
       }, { headers });
       
+      console.log('Сообщение отправлено через API:', response.data);
       e.target.reset();
     } catch (error) {
       console.error('Ошибка при отправке сообщения:', error);
@@ -40,7 +41,12 @@ export default function MessageForm() {
   return (
     <form onSubmit={handleSubmit} className="mt-auto px-5 py-3">
       <div className="input-group">
-        <input name="message" placeholder={t('messages.placeholder')} className="form-control" />
+        <input 
+          name="message" 
+          placeholder={t('messages.placeholder')} 
+          className="form-control"
+          aria-label={t('messages.newMessage')}
+        />
         <button type="submit" className="btn btn-primary">{t('messages.send')}</button>
       </div>
     </form>

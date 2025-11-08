@@ -145,6 +145,7 @@ const ChatPage = () => {
 
     // Подписка на socket события
     socket.on('newMessage', (message) => {
+      console.log('Получено новое сообщение через socket:', message);
       dispatch(addMessage(message));
     });
 
