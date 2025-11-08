@@ -10,10 +10,11 @@ const schema = yup.object().shape({
 
 export default function AddChannelModal({ show, handleClose }) {
   const dispatch = useDispatch()
-  const channels = useSelector(state => {
+  const channels = useSelector((state) => {
     try {
       return channelsSelectors.selectAll(state) || []
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Ошибка при получении каналов:', error)
       return []
     }
@@ -40,10 +41,12 @@ export default function AddChannelModal({ show, handleClose }) {
       dispatch(addChannel(data))
       dispatch(setCurrentChannelId(data.id))
       handleClose()
-    } catch (err) {
+    }
+    catch (err) {
       console.error('Ошибка создания канала', err)
       setFieldError('name', 'Ошибка при создании канала')
-    } finally {
+    }
+    finally {
       setSubmitting(false)
     }
   }

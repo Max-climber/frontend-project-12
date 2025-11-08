@@ -41,13 +41,16 @@ export const SignupPage = () => {
       localStorage.setItem('token', response.data.token)
       dispatch(setUser(values.username.trim()))
       navigate('/')
-    } catch (e) {
+    }
+    catch (e) {
       if (e.response?.status === 409) {
         setFieldError('username', t('signupPage.errors.userExists'))
-      } else {
+      }
+      else {
         setFieldError('username', t('signupPage.errors.registrationError'))
       }
-    } finally {
+    }
+    finally {
       setSubmitting(false)
     }
   }

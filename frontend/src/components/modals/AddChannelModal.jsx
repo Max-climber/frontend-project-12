@@ -13,10 +13,11 @@ export default function AddChannelModal({ onClose }) {
   const { t } = useTranslation()
   const dispatch = useDispatch()
   const inputRef = useRef(null)
-  const channels = useSelector(state => {
+  const channels = useSelector((state) => {
     try {
       return channelsSelectors.selectAll(state) || []
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Ошибка при получении каналов:', error)
       return []
     }
@@ -71,9 +72,11 @@ export default function AddChannelModal({ onClose }) {
               dispatch(setCurrentChannelId(channel.id))
               toast.success(t('toast.channelCreated'))
               onClose()
-            } catch {
+            }
+            catch {
               setFieldError('name', t('channels.errors.create'))
-            } finally {
+            }
+            finally {
               setSubmitting(false)
             }
           }}

@@ -8,7 +8,7 @@ export default function MessageForm() {
   const currentChannelId = useSelector(state => state.channels?.currentChannelId)
   const username = useSelector(state => state.user.username)
 
-  const handleSubmit = async e => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     const text = e.target.elements.message.value.trim()
     if (!text || !currentChannelId) return
@@ -33,7 +33,8 @@ export default function MessageForm() {
 
       console.log('Сообщение отправлено через API:', response.data)
       e.target.reset()
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Ошибка при отправке сообщения:', error)
     }
   }

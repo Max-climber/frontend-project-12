@@ -87,7 +87,8 @@ const ChatPage = () => {
           }
           isInitialized.current = true
         }
-      } catch (e) {
+      }
+      catch (e) {
         console.error('Ошибка при получении данных:', e)
         // Отправляем ошибку в Rollbar
         rollbar.error('Ошибка при загрузке данных', e, {
@@ -103,13 +104,16 @@ const ChatPage = () => {
           if (typeof e.response.data === 'string' && e.response.data.includes('<!doctype html>')) {
             console.error('API сервер не запущен или недоступен.')
             toast.error(t('toast.dataLoadError'))
-          } else {
+          }
+          else {
             toast.error(t('toast.dataLoadError'))
           }
-        } else if (e.code === 'ERR_NETWORK' || e.message?.includes('Network Error')) {
+        }
+        else if (e.code === 'ERR_NETWORK' || e.message?.includes('Network Error')) {
           console.error('Ошибка сети: API сервер недоступен.')
           toast.error(t('toast.networkError'))
-        } else {
+        }
+        else {
           toast.error(t('toast.dataLoadError'))
         }
       }
@@ -139,21 +143,21 @@ const ChatPage = () => {
       console.log('Сокет подключен')
     })
 
-    socket.on('connect_error', err => {
+    socket.on('connect_error', (err) => {
       console.error('Ошибка подключения к сокету:', err)
     })
 
     // Подписка на socket события
-    socket.on('newMessage', message => {
+    socket.on('newMessage', (message) => {
       console.log('Получено новое сообщение через socket:', message)
       dispatch(addMessage(message))
     })
 
-    socket.on('newChannel', channel => {
+    socket.on('newChannel', (channel) => {
       dispatch(addChannel(channel))
     })
 
-    socket.on('removeChannel', data => {
+    socket.on('removeChannel', (data) => {
       dispatch(removeChannel(data.id))
       dispatch(removeMessagesByChannelsId(data.id))
       const currentId = store.getState()?.channels?.currentChannelId
@@ -162,7 +166,7 @@ const ChatPage = () => {
       }
     })
 
-    socket.on('renameChannel', data => {
+    socket.on('renameChannel', (data) => {
       dispatch(renameChannel({ id: data.id, changes: { name: data.name } }))
     })
 

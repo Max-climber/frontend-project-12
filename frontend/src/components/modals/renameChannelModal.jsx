@@ -10,10 +10,11 @@ import axios from 'axios'
 export default function RenameChannelModal({ onClose, channel }) {
   const { t } = useTranslation()
   const inputRef = useRef(null)
-  const channels = useSelector(state => {
+  const channels = useSelector((state) => {
     try {
       return channelsSelectors.selectAll(state) || []
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Ошибка при получении каналов:', error)
       return []
     }
@@ -65,9 +66,11 @@ export default function RenameChannelModal({ onClose, channel }) {
               // и обработается в ChatPage, поэтому здесь не нужно обновлять store
               toast.success(t('toast.channelRenamed'))
               onClose()
-            } catch {
+            }
+            catch {
               setFieldError('name', t('channels.errors.rename'))
-            } finally {
+            }
+            finally {
               setSubmitting(false)
             }
           }}

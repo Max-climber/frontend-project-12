@@ -38,15 +38,17 @@ export const LoginPage = () => {
                       dispatch(setUser(values.username))
 
                       navigate('/')
-                    } catch (e) {
+                    }
+                    catch (e) {
                       console.error(e)
                       setStatus(t('loginPage.error'))
-                    } finally {
+                    }
+                    finally {
                       setSubmitting(false)
                     }
                   }}
                 >
-                  {formik => {
+                  {(formik) => {
                     const { status, isSubmitting } = formik
                     return (
                       <Form>

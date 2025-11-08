@@ -25,7 +25,8 @@ export default function RemoveChannelModal({ onClose, channel }) {
       dispatch(setCurrentChannelId(1)) // переходим в дефолтный канал
       toast.success(t('toast.channelRemoved'))
       onClose()
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Ошибка при удалении канала:', error)
       toast.error(t('channels.errors.remove') || t('toast.dataLoadError'))
     }
