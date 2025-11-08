@@ -6,7 +6,7 @@ import { io } from 'socket.io-client';
 export const initSocket = () => {
   const socket = io('/', {
     path: '/socket.io',
-    transports: ['websocket'],
+    transports: ['websocket', 'polling'], // Добавляем polling как fallback
   });
 
   return socket;
