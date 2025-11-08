@@ -8,7 +8,7 @@ import { setChannels, setCurrentChannelId, addChannel, removeChannel, renameChan
 import { setMessages, addMessage, removeMessagesByChannelsId } from '../features/messages/messagesSlice';
 import ChannelsList from '../components/ChannelsList';
 import MessagesBox from '../components/MessagesBox';
-import MessageForm from '../components/messageForm';
+import MessageForm from '../components/MessageForm';
 import AddChannelModal from '../components/modals/AddChannelModal';
 import RemoveChannelModal from '../components/modals/removeChannelModal';
 import RenameChannelModal from '../components/modals/renameChannelModal';
