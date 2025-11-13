@@ -1,16 +1,19 @@
 // для пути /login
-import { Formik, Form, Field } from 'formik'
+import { Formik, Form, Field, ErrorMessage } from 'formik'
 import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { useTranslation } from 'react-i18next'
-import { setUser } from '../features/users/userSlice'
-import axios from 'axios'
+import { createLoginSchema } from '../validation/loginSchema'
+import { createLoginHandler } from '../utils/loginHandler'
 
 export const LoginPage = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const dispatch = useDispatch()
+
+  const schema = createLoginSchema(t)
+  const handleSubmit = createLoginHandler(dispatch, navigate, t)
 
   return (
     <div className="container-fluid h-100">
@@ -27,26 +30,8 @@ export const LoginPage = () => {
                     username: '',
                     password: '',
                   }}
-                  onSubmit={async (values, { setSubmitting, setStatus }) => {
-                    try {
-                      // В dev-режиме proxy переписывает /api на /api/v1
-                      // В prod используем прямой путь /api/v1
-                      const apiPath = import.meta.env.PROD ? '/api/v1/login' : '/api/login'
-                      const response = await axios.post(apiPath, values)
-                      localStorage.setItem('token', response.data.token)
-
-                      dispatch(setUser(values.username))
-
-                      navigate('/')
-                    }
-                    catch (e) {
-                      console.error(e)
-                      setStatus(t('loginPage.error'))
-                    }
-                    finally {
-                      setSubmitting(false)
-                    }
-                  }}
+                  validationSchema={schema}
+                  onSubmit={handleSubmit}
                 >
                   {(formik) => {
                     const { status, isSubmitting } = formik
@@ -63,6 +48,11 @@ export const LoginPage = () => {
                             className="form-control"
                             autoComplete="username"
                           />
+                          <ErrorMessage
+                            name="username"
+                            component="div"
+                            className="text-danger"
+                          />
                         </div>
                         <div className="mb-3">
                           <label htmlFor="password" className="form-label">
@@ -74,6 +64,11 @@ export const LoginPage = () => {
                             name="password"
                             className="form-control"
                             autoComplete="current-password"
+                          />
+                          <ErrorMessage
+                            name="password"
+                            component="div"
+                            className="text-danger"
                           />
                         </div>
                         {status && (

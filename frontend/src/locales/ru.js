@@ -12,6 +12,9 @@ export default {
       noAccount: 'Нет аккаунта?',
       signup: 'Регистрация',
       error: 'Неверные имя пользователя или пароль',
+      validation: {
+        required: 'Обязательное поле',
+      },
     },
     signupPage: {
       title: 'Регистрация',
