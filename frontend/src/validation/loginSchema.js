@@ -1,6 +1,6 @@
 import * as yup from 'yup'
 
-export const createLoginSchema = (t) => yup.object().shape({
+export const createLoginSchema = t => yup.object().shape({
   username: yup
     .string()
     .trim()
@@ -9,4 +9,3 @@ export const createLoginSchema = (t) => yup.object().shape({
     .string()
     .required(t('loginPage.validation.required')),
 })
-

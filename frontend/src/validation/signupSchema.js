@@ -1,6 +1,6 @@
 import * as yup from 'yup'
 
-export const createSignupSchema = (t) => yup.object().shape({
+export const createSignupSchema = t => yup.object().shape({
   username: yup
     .string()
     .trim()
@@ -16,4 +16,3 @@ export const createSignupSchema = (t) => yup.object().shape({
     .oneOf([yup.ref('password')], t('signupPage.validation.passwordsMatch'))
     .required(t('signupPage.validation.required')),
 })
-

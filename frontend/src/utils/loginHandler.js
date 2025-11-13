@@ -21,4 +21,3 @@ export const createLoginHandler = (dispatch, navigate, t) => async (values, { se
     setSubmitting(false)
   }
 }
-

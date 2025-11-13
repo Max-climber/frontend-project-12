@@ -1,6 +1,5 @@
 import filter from 'leo-profanity'
 
-
 const englishWords = filter.list()
 
 // Загружаем русский словарь (заменяет английский)
