@@ -94,8 +94,6 @@ frontend-project-12/
 │   │   └── locales/     # Переводы
 │   ├── public/          # Статические файлы
 │   └── dist/            # Собранный проект
-├── tests/               # Playwright тесты
-├── playwright.config.js # Конфигурация тестов
 └── package.json         # Зависимости проекта
 ```
 
