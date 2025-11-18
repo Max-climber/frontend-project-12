@@ -4,7 +4,7 @@ import { toast } from 'react-toastify'
 import { channelsSelectors } from '../../features/channels/channelsSlice'
 import { Formik, Form, Field, ErrorMessage } from 'formik'
 import * as yup from 'yup'
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import axios from 'axios'
 
 export default function RenameChannelModal({ onClose, channel }) {
@@ -23,6 +23,33 @@ export default function RenameChannelModal({ onClose, channel }) {
   const schema = yup.object().shape({
     name: yup.string().trim().min(3, t('channels.validation.length')).max(20, t('channels.validation.length')).required(t('channels.validation.required')),
   })
+
+  const handleSubmit = useCallback(async (values, { setSubmitting, setFieldError }) => {
+    const name = values.name.trim()
+
+    if (channels.some(ch => ch.name === name && ch.id !== channel.id)) {
+      setFieldError('name', t('channels.validation.duplicate'))
+      setSubmitting(false)
+      return
+    }
+
+    try {
+      const token = localStorage.getItem('token')
+      const headers = {
+        Authorization: `Bearer ${token}`,
+      }
+      const apiPath = import.meta.env.PROD ? `/api/v1/channels/${channel.id}` : `/api/channels/${channel.id}`
+      await axios.patch(apiPath, { name }, { headers })
+      toast.success(t('toast.channelRenamed'))
+      onClose()
+    }
+    catch {
+      setFieldError('name', t('channels.errors.rename'))
+    }
+    finally {
+      setSubmitting(false)
+    }
+  }, [channel.id, channels, onClose, t])
 
   useEffect(() => {
     if (inputRef.current) {
@@ -43,37 +70,7 @@ export default function RenameChannelModal({ onClose, channel }) {
         <Formik
           initialValues={{ name: channel.name }}
           validationSchema={schema}
-          onSubmit={async (values, { setSubmitting, setFieldError }) => {
-            const name = values.name.trim()
-
-            // Проверка на дубликат (исключая текущий канал)
-            if (channels.some(ch => ch.name === name && ch.id !== channel.id)) {
-              setFieldError('name', t('channels.validation.duplicate'))
-              setSubmitting(false)
-              return
-            }
-
-            try {
-              const token = localStorage.getItem('token')
-              const headers = {
-                Authorization: `Bearer ${token}`,
-              }
-              // В dev-режиме proxy переписывает /api на /api/v1
-              // В prod используем прямой путь /api/v1
-              const apiPath = import.meta.env.PROD ? `/api/v1/channels/${channel.id}` : `/api/channels/${channel.id}`
-              await axios.patch(apiPath, { name }, { headers })
-              // Socket событие renameChannel придет автоматически от сервера
-              // и обработается в ChatPage, поэтому здесь не нужно обновлять store
-              toast.success(t('toast.channelRenamed'))
-              onClose()
-            }
-            catch {
-              setFieldError('name', t('channels.errors.rename'))
-            }
-            finally {
-              setSubmitting(false)
-            }
-          }}
+          onSubmit={handleSubmit}
         >
           {({ isSubmitting }) => (
             <Form>
